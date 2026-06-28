@@ -3,6 +3,9 @@
   "ui": "tui",
   "globalEnv": ["AUTH_SECRET", "DATABASE_URL"],
   "tasks": {
+    "db:generate": {
+      "cache": false
+    },
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
