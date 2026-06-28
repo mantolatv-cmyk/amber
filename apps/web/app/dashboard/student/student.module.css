@@ -1,0 +1,217 @@
+.dashboardContainer {
+  max-width: var(--container-xl);
+  margin: 0 auto;
+}
+
+.welcomeHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+}
+
+.cardHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.textBtn {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Next Class Card */
+.nextClassCard {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.05) 0%, transparent 100%);
+  border-color: var(--color-primary-100);
+}
+
+.nextClassHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--space-4);
+}
+
+.nextClassTime {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.timeLabel {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+.statusBadge {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+.tutorInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.tutorAvatar {
+  width: 48px;
+  height: 48px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+}
+
+.tutorName {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.subjectName {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: var(--space-8) 0;
+}
+
+.emptyIcon {
+  font-size: 40px;
+  margin-bottom: var(--space-4);
+}
+
+.emptyState h3 {
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.emptyState p {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* Stats */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.statBox {
+  background: var(--color-bg-subtle);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Goals */
+.goalList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.goalItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.goalIcon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.goalCompleted .goalIcon {
+  color: var(--color-primary);
+}
+
+.goalCompleted span {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.titleIcon {
+  color: var(--color-primary);
+}

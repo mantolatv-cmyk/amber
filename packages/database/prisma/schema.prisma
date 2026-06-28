@@ -1,0 +1,403 @@
+// This is the Prisma schema for OpenLearn - AI Education Marketplace
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  student
+  tutor
+  admin
+}
+
+enum AuthProvider {
+  email
+  google
+  github
+}
+
+enum TutorStatus {
+  pending_review
+  approved
+  suspended
+  rejected
+}
+
+enum ProficiencyLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+enum SessionStatus {
+  pending_confirmation
+  confirmed
+  in_progress
+  completed
+  cancelled_by_student
+  cancelled_by_tutor
+  no_show
+  disputed
+}
+
+enum PaymentStatus {
+  pending
+  held_in_escrow
+  released_to_tutor
+  refunded
+  partially_refunded
+  failed
+  disputed
+}
+
+enum NotificationType {
+  session_booked
+  session_confirmed
+  session_reminder
+  session_cancelled
+  session_started
+  payment_received
+  review_received
+  new_message
+  system
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  id            String       @id @default(uuid()) @db.Uuid
+  passwordHash  String?      @map("password_hash")
+  email         String       @unique @db.VarChar(255)
+  fullName      String       @map("full_name") @db.VarChar(255)
+  avatarUrl     String?      @map("avatar_url")
+  role          UserRole     @default(student)
+  authProvider  AuthProvider @default(email) @map("auth_provider")
+  timezone      String       @default("UTC") @db.VarChar(64)
+  locale        String       @default("pt-BR") @db.VarChar(10)
+  isActive      Boolean      @default(true) @map("is_active")
+  emailVerified Boolean      @default(false) @map("email_verified")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  tutorProfile    TutorProfile?
+  studentProfile  StudentProfile?
+  sessionsAsStudent Session[]      @relation("StudentSessions")
+  reviewsGiven    Review[]        @relation("ReviewerReviews")
+  sentMessages    Message[]       @relation("SentMessages")
+  receivedMessages Message[]      @relation("ReceivedMessages")
+  notifications   Notification[]
+  auditActions    AuditLog[]
+
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model TutorProfile {
+  id               String      @id @default(uuid()) @db.Uuid
+  userId           String      @unique @map("user_id") @db.Uuid
+  headline         String      @db.VarChar(200)
+  bio              String
+  videoIntroUrl    String?     @map("video_intro_url")
+  hourlyRateCents  Int         @map("hourly_rate_cents")
+  currency         String      @default("BRL") @db.VarChar(3)
+  trialRateCents   Int?        @map("trial_rate_cents")
+  yearsExperience  Int?        @map("years_experience") @db.SmallInt
+  status           TutorStatus @default(pending_review)
+  stripeAccountId  String?     @map("stripe_account_id") @db.VarChar(255)
+  stripeOnboarded  Boolean     @default(false) @map("stripe_onboarded")
+  totalSessions    Int         @default(0) @map("total_sessions")
+  avgRating        Decimal     @default(0) @map("avg_rating") @db.Decimal(3, 2)
+  responseTimeMins Int?        @map("response_time_mins")
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime    @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects     TutorSubject[]
+  availability Availability[]
+  timeOffs     TimeOff[]
+  sessions     Session[]
+  reviews      Review[]       @relation("TutorReviews")
+  paymentsReceived Payment[]  @relation("TutorPayments")
+
+  @@index([status])
+  @@index([hourlyRateCents])
+  @@index([avgRating(sort: Desc)])
+  @@map("tutor_profiles")
+}
+
+model StudentProfile {
+  id                String           @id @default(uuid()) @db.Uuid
+  userId            String           @unique @map("user_id") @db.Uuid
+  learningGoals     String?          @map("learning_goals")
+  proficiencyLevel  ProficiencyLevel @default(beginner) @map("proficiency_level")
+  preferredSchedule Json?            @map("preferred_schedule")
+  stripeCustomerId  String?          @map("stripe_customer_id") @db.VarChar(255)
+  totalHoursLearned Int              @default(0) @map("total_hours_learned")
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("student_profiles")
+}
+
+model Subject {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique @db.VarChar(100)
+  name        String   @db.VarChar(200)
+  category    String   @db.VarChar(100)
+  description String?
+  iconUrl     String?  @map("icon_url")
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tutors   TutorSubject[]
+  sessions Session[]
+
+  @@map("subjects")
+}
+
+model TutorSubject {
+  id        String @id @default(uuid()) @db.Uuid
+  tutorId   String @map("tutor_id") @db.Uuid
+  subjectId String @map("subject_id") @db.Uuid
+
+  // Relations
+  tutor   TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  subject Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([tutorId, subjectId])
+  @@index([subjectId])
+  @@index([tutorId])
+  @@map("tutor_subjects")
+}
+
+model Availability {
+  id           String   @id @default(uuid()) @db.Uuid
+  tutorId      String   @map("tutor_id") @db.Uuid
+  dayOfWeek    Int      @map("day_of_week") @db.SmallInt // 0=Sunday
+  startTimeUtc String   @map("start_time_utc") @db.VarChar(8) // "HH:mm:ss"
+  endTimeUtc   String   @map("end_time_utc") @db.VarChar(8)
+  isRecurring  Boolean  @default(true) @map("is_recurring")
+  validFrom    DateTime? @map("valid_from") @db.Date
+  validUntil   DateTime? @map("valid_until") @db.Date
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tutor TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId])
+  @@index([dayOfWeek])
+  @@map("availability")
+}
+
+model TimeOff {
+  id           String   @id @default(uuid()) @db.Uuid
+  tutorId      String   @map("tutor_id") @db.Uuid
+  startTime    DateTime @map("start_time") @db.Timestamptz()
+  endTime      DateTime @map("end_time") @db.Timestamptz()
+  reason       String?  @db.VarChar(200)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  tutor TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId])
+  @@map("time_off")
+}
+
+model Session {
+  id                String        @id @default(uuid()) @db.Uuid
+  studentId         String        @map("student_id") @db.Uuid
+  tutorId           String        @map("tutor_id") @db.Uuid
+  subjectId         String        @map("subject_id") @db.Uuid
+  status            SessionStatus @default(pending_confirmation)
+  scheduledStart    DateTime      @map("scheduled_start") @db.Timestamptz()
+  scheduledEnd      DateTime      @map("scheduled_end") @db.Timestamptz()
+  actualStart       DateTime?     @map("actual_start") @db.Timestamptz()
+  actualEnd         DateTime?     @map("actual_end") @db.Timestamptz()
+  durationMinutes   Int           @default(60) @map("duration_minutes")
+  priceCents        Int           @map("price_cents")
+  currency          String        @default("BRL") @db.VarChar(3)
+  isTrial           Boolean       @default(false) @map("is_trial")
+  cancellationReason String?      @map("cancellation_reason")
+  dailyRoomName     String?       @map("daily_room_name") @db.VarChar(255)
+  dailyRoomUrl      String?       @map("daily_room_url")
+  notes             String?
+  version           Int           @default(1)
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  student User         @relation("StudentSessions", fields: [studentId], references: [id])
+  tutor   TutorProfile @relation(fields: [tutorId], references: [id])
+  subject Subject      @relation(fields: [subjectId], references: [id])
+  payment Payment?
+  review  Review?
+
+  @@index([studentId])
+  @@index([tutorId])
+  @@index([status])
+  @@index([scheduledStart])
+  @@index([tutorId, scheduledStart, scheduledEnd])
+  @@map("sessions")
+}
+
+model Payment {
+  id                     String        @id @default(uuid()) @db.Uuid
+  sessionId              String        @unique @map("session_id") @db.Uuid
+  studentId              String        @map("student_id") @db.Uuid
+  tutorId                String        @map("tutor_id") @db.Uuid
+  amountCents            Int           @map("amount_cents")
+  platformFeeCents       Int           @default(0) @map("platform_fee_cents")
+  tutorPayoutCents       Int           @default(0) @map("tutor_payout_cents")
+  currency               String        @default("BRL") @db.VarChar(3)
+  status                 PaymentStatus @default(pending)
+  stripePaymentIntentId  String?       @map("stripe_payment_intent_id") @db.VarChar(255)
+  stripeTransferId       String?       @map("stripe_transfer_id") @db.VarChar(255)
+  stripeRefundId         String?       @map("stripe_refund_id") @db.VarChar(255)
+  escrowHeldAt           DateTime?     @map("escrow_held_at") @db.Timestamptz()
+  releasedAt             DateTime?     @map("released_at") @db.Timestamptz()
+  refundedAt             DateTime?     @map("refunded_at") @db.Timestamptz()
+  failureReason          String?       @map("failure_reason")
+  idempotencyKey         String        @unique @map("idempotency_key") @db.VarChar(255)
+  retryCount             Int           @default(0) @map("retry_count") @db.SmallInt
+  createdAt              DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt              DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  session Session       @relation(fields: [sessionId], references: [id])
+  tutor   TutorProfile  @relation("TutorPayments", fields: [tutorId], references: [id])
+  events  PaymentEvent[]
+
+  @@index([sessionId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+  @@map("payments")
+}
+
+model PaymentEvent {
+  id             String         @id @default(uuid()) @db.Uuid
+  paymentId      String         @map("payment_id") @db.Uuid
+  eventType      String         @map("event_type") @db.VarChar(100)
+  previousStatus PaymentStatus? @map("previous_status")
+  newStatus      PaymentStatus  @map("new_status")
+  stripeEventId  String?        @map("stripe_event_id") @db.VarChar(255)
+  metadata       Json           @default("{}")
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId])
+  @@index([stripeEventId])
+  @@map("payment_events")
+}
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @unique @map("session_id") @db.Uuid
+  studentId String   @map("student_id") @db.Uuid
+  tutorId   String   @map("tutor_id") @db.Uuid
+  rating    Int      @db.SmallInt
+  comment   String?
+  isPublic  Boolean  @default(true) @map("is_public")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  session Session      @relation(fields: [sessionId], references: [id])
+  student User         @relation("ReviewerReviews", fields: [studentId], references: [id])
+  tutor   TutorProfile @relation("TutorReviews", fields: [tutorId], references: [id])
+
+  @@index([tutorId])
+  @@index([tutorId, rating])
+  @@map("reviews")
+}
+
+model Message {
+  id             String   @id @default(uuid()) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  senderId       String   @map("sender_id") @db.Uuid
+  receiverId     String   @map("receiver_id") @db.Uuid
+  content        String   @db.Text
+  contentPreview String?  @map("content_preview") @db.VarChar(200)
+  firebaseRef    String?  @map("firebase_ref") @db.VarChar(500)
+  isRead         Boolean  @default(false) @map("is_read")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([receiverId])
+  @@map("messages")
+}
+
+model Notification {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @map("user_id") @db.Uuid
+  type        NotificationType
+  title       String           @db.VarChar(200)
+  body        String?
+  data        Json             @default("{}")
+  isRead      Boolean          @default(false) @map("is_read")
+  sentViaPush Boolean          @default(false) @map("sent_via_push")
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @map("actor_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String   @map("entity_type") @db.VarChar(50)
+  entityId   String   @map("entity_id") @db.Uuid
+  changes    Json     @default("{}")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
+model CommissionTier {
+  id              String   @id @default(uuid()) @db.Uuid
+  minSessions     Int      @default(0) @map("min_sessions")
+  maxSessions     Int?     @map("max_sessions")
+  platformFeePct  Decimal  @map("platform_fee_pct") @db.Decimal(5, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@map("commission_tiers")
+}
