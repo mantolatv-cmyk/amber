@@ -4,7 +4,7 @@ import { compare } from "bcryptjs";
 import prisma from "@ailearn/database";
 
 const nextAuthResult = NextAuth({
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET || "fallback_secret_for_build_only_please_change",
   session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({

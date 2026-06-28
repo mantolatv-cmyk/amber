@@ -3,6 +3,8 @@ import "./globals.css";
 import SessionProviderWrapper from "./components/SessionProviderWrapper";
 import { Toaster } from "sonner";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "OpenLearn | Aulas Particulares de Inteligência Artificial com Especialistas",
   description:
