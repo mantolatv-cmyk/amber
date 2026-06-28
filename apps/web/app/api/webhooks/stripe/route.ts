@@ -103,28 +103,31 @@ export async function POST(req: NextRequest) {
               } else {
                 console.error("Failed to create Daily room:", await roomRes.text());
               }
-            if (DAILY_API_KEY) {
-              // ... room creation logic ...
+            } catch (error) {
+              console.error("Error creating Daily room:", error);
             }
-            
-            // Re-fetch session with user emails
+          } else {
+            console.warn("⚠️ DAILY_CO_API_KEY is not set. Skipping room creation.");
+          }
+
+          // Re-fetch session with user emails
             const confirmedSession = await prisma.session.findUnique({
               where: { id: ourSessionId },
               include: {
-                student: { include: { user: true } },
+                student: true,
                 tutor: { include: { user: true } },
               }
             });
 
             if (confirmedSession) {
-              const studentName = confirmedSession.student.user.fullName;
+              const studentName = confirmedSession.student.fullName;
               const tutorName = confirmedSession.tutor.user.fullName;
               const dateStr = confirmedSession.scheduledStart.toLocaleString("pt-BR");
               const joinUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/classroom/${ourSessionId}`;
 
               // Email to student
               await sendEmail({
-                to: confirmedSession.student.user.email,
+                to: confirmedSession.student.email,
                 ...EmailTemplates.sessionConfirmed(studentName, tutorName, dateStr, joinUrl)
               });
 
@@ -134,11 +137,7 @@ export async function POST(req: NextRequest) {
                 ...EmailTemplates.sessionConfirmed(tutorName, studentName, dateStr, joinUrl)
               });
             }
-
-          } else {
-            console.warn("⚠️ DAILY_CO_API_KEY is not set. Skipping room creation.");
           }
-        }
         break;
       }
 

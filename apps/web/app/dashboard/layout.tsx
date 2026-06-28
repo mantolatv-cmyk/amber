@@ -12,7 +12,7 @@ export default async function DashboardLayout({
   const session = await auth();
   const isTutor = session?.user?.role === 'tutor';
   const userName = session?.user?.name || '';
-  const initials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
+  const initials = userName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
 
   return (
     <div className={styles.dashboardWrapper}>

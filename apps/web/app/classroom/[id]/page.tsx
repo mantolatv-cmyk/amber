@@ -7,7 +7,7 @@ import DailyIframe from '@daily-co/daily-js';
 import { fetchClassroomData, saveSessionNotes } from './actions';
 import styles from './classroom.module.css';
 
-export default function ClassroomPage({ params }: { params: { id: string } }) {
+export default function ClassroomPage({ params }: any) {
   const [activeTab, setActiveTab] = useState<'chat' | 'notes'>('chat');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [mainView, setMainView] = useState<'video' | 'code' | 'split'>('video');
@@ -143,7 +143,7 @@ export default function ClassroomPage({ params }: { params: { id: string } }) {
     const timeout = setTimeout(async () => {
       try {
         await saveSessionNotes(params.id, notes);
-        setSessionData(prev => ({ ...prev, notes }));
+        setSessionData((prev: any) => ({ ...prev, notes }));
       } catch (err) {}
       setSavingNotes(false);
     }, 1000);

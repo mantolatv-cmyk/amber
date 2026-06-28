@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import prisma from "@ailearn/database";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const nextAuthResult = NextAuth({
   secret: process.env.AUTH_SECRET,
   session: { strategy: "jwt" },
   providers: [
@@ -61,3 +61,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/login',
   }
 });
+
+export const handlers = nextAuthResult.handlers;
+export const auth: any = nextAuthResult.auth;
+export const signIn = nextAuthResult.signIn;
+export const signOut = nextAuthResult.signOut;

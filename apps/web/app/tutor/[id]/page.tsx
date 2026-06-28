@@ -13,7 +13,7 @@ function renderStars(count: number): string {
   return "★".repeat(full) + "☆".repeat(5 - full);
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: any): Promise<Metadata> {
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id: params.id },
     include: { user: { select: { fullName: true } } },
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function TutorProfilePage({ params }: { params: { id: string } }) {
+export default async function TutorProfilePage({ params }: any) {
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id: params.id },
     include: {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@ailearn/database";
 import { requireAuth, generateUnauthorizedResponse } from "../../auth";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: any) {
   try {
     const auth = await requireAuth(req);
     if (!auth) return generateUnauthorizedResponse();

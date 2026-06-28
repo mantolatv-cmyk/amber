@@ -54,7 +54,7 @@ function isProtectedRoute(pathname: string): boolean {
   return false;
 }
 
-export default auth((req) => {
+export default auth((req: any) => {
   const { pathname } = req.nextUrl;
 
   // Always allow public routes

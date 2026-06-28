@@ -74,7 +74,7 @@ export async function cancelSession(sessionId: string) {
   const fullSession = await prisma.session.findUnique({
     where: { id: sessionId },
     include: {
-      student: { include: { user: true } },
+      student: true,
       tutor: { include: { user: true } },
     }
   });
@@ -84,9 +84,9 @@ export async function cancelSession(sessionId: string) {
     if (isTutor) {
       // Tutor cancelled, email student
       await sendEmail({
-        to: fullSession.student.user.email,
+        to: fullSession.student.email,
         ...EmailTemplates.sessionCancelled(
-          fullSession.student.user.fullName,
+          fullSession.student.fullName,
           fullSession.tutor.user.fullName,
           dateStr,
           'Cancelada pelo tutor.'
@@ -98,7 +98,7 @@ export async function cancelSession(sessionId: string) {
         to: fullSession.tutor.user.email,
         ...EmailTemplates.sessionCancelled(
           fullSession.tutor.user.fullName,
-          fullSession.student.user.fullName,
+          fullSession.student.fullName,
           dateStr,
           'Cancelada pelo aluno.'
         )

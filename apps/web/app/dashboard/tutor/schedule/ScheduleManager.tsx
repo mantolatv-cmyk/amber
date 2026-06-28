@@ -128,7 +128,7 @@ function WeeklyTab({ initialAvailability }: { initialAvailability: any[] }) {
   const [schedule, setSchedule] = useState(() => {
     const s = Array.from({ length: 7 }, () => [] as { start: string, end: string }[]);
     initialAvailability.forEach(a => {
-      s[a.dayOfWeek].push({ start: a.startTimeUtc, end: a.endTimeUtc });
+      s[a.dayOfWeek]?.push({ start: a.startTimeUtc, end: a.endTimeUtc });
     });
     return s;
   });
@@ -136,19 +136,21 @@ function WeeklyTab({ initialAvailability }: { initialAvailability: any[] }) {
 
   const addSlot = (day: number) => {
     const newSchedule = [...schedule];
-    newSchedule[day].push({ start: '09:00', end: '17:00' });
+    if (newSchedule[day]) newSchedule[day].push({ start: '09:00', end: '17:00' });
     setSchedule(newSchedule);
   };
 
   const updateSlot = (day: number, index: number, field: 'start'|'end', val: string) => {
     const newSchedule = [...schedule];
-    newSchedule[day][index][field] = val;
+    if (newSchedule[day] && newSchedule[day][index]) {
+      newSchedule[day][index][field] = val;
+    }
     setSchedule(newSchedule);
   };
 
   const removeSlot = (day: number, index: number) => {
     const newSchedule = [...schedule];
-    newSchedule[day].splice(index, 1);
+    if (newSchedule[day]) newSchedule[day].splice(index, 1);
     setSchedule(newSchedule);
   };
 
@@ -156,7 +158,7 @@ function WeeklyTab({ initialAvailability }: { initialAvailability: any[] }) {
     setIsSaving(true);
     const flat = [];
     for (let d = 0; d < 7; d++) {
-      for (const slot of schedule[d]) {
+      for (const slot of schedule[d] || []) {
         flat.push({ dayOfWeek: d, startTimeUtc: slot.start, endTimeUtc: slot.end });
       }
     }
@@ -177,10 +179,10 @@ function WeeklyTab({ initialAvailability }: { initialAvailability: any[] }) {
         <div key={dayIndex} style={{ display: 'flex', alignItems: 'flex-start', borderBottom: '1px solid var(--color-border-subtle)', padding: '16px 0' }}>
           <div style={{ width: '120px', fontWeight: 500, paddingTop: '8px' }}>{dayName}</div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {schedule[dayIndex].length === 0 ? (
+            {(!schedule[dayIndex] || schedule[dayIndex].length === 0) ? (
               <div style={{ color: 'var(--color-text-tertiary)', fontSize: '14px', paddingTop: '8px' }}>Indisponível</div>
             ) : (
-              schedule[dayIndex].map((slot, i) => (
+              (schedule[dayIndex] || []).map((slot, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input type="time" className="input" value={slot.start} onChange={e => updateSlot(dayIndex, i, 'start', e.target.value)} />
                   <span>até</span>

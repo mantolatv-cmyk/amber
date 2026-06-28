@@ -102,7 +102,7 @@ export async function rejectSession(sessionId: string) {
   const fullSession = await prisma.session.findUnique({
     where: { id: sessionId },
     include: {
-      student: { include: { user: true } },
+      student: true,
       tutor: { include: { user: true } },
     }
   });
@@ -110,9 +110,9 @@ export async function rejectSession(sessionId: string) {
   if (fullSession) {
     const dateStr = fullSession.scheduledStart.toLocaleString('pt-BR');
     await sendEmail({
-      to: fullSession.student.user.email,
+      to: fullSession.student.email,
       ...EmailTemplates.sessionCancelled(
-        fullSession.student.user.fullName,
+        fullSession.student.fullName,
         fullSession.tutor.user.fullName,
         dateStr,
         'O tutor recusou a solicitação de aula.'

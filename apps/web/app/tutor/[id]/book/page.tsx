@@ -21,7 +21,7 @@ interface AvailSlot {
 
 const DAY_LABELS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
-export default function BookingPage({ params }: { params: { id: string } }) {
+export default function BookingPage({ params }: any) {
   const router = useRouter();
   const [tutorInfo, setTutorInfo] = useState<TutorInfo | null>(null);
   const [availSlots, setAvailSlots] = useState<AvailSlot[]>([]);
@@ -70,7 +70,9 @@ export default function BookingPage({ params }: { params: { id: string } }) {
     if (daysUntil <= 0) daysUntil += 7;
     const nextDate = new Date(now);
     nextDate.setDate(now.getDate() + daysUntil);
-    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const parts = selectedTime.split(':');
+    const hours = Number(parts[0]) || 0;
+    const minutes = Number(parts[1]) || 0;
     nextDate.setHours(hours, minutes, 0, 0);
     const endDate = new Date(nextDate.getTime() + 60 * 60 * 1000);
     return { start: nextDate, end: endDate };
