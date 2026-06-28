@@ -10,7 +10,8 @@
     "check-types": "turbo run check-types",
     "db:generate": "turbo run db:generate --filter=@ailearn/database",
     "db:push": "turbo run db:push --filter=@ailearn/database",
-    "db:seed": "turbo run db:seed --filter=@ailearn/database"
+    "db:seed": "turbo run db:seed --filter=@ailearn/database",
+    "postinstall": "turbo run db:generate --filter=@ailearn/database"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
