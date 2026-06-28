@@ -1,5 +1,11 @@
-import { auth } from "./auth";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
+
+const { auth } = NextAuth({
+  secret: process.env.AUTH_SECRET || "fallback_secret_for_build_only_please_change",
+  session: { strategy: "jwt" },
+  providers: []
+});
 
 /**
  * Next.js Middleware — Route Protection
