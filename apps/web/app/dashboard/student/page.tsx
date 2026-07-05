@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Play, History, CheckCircle, Circle, Target, Search, CalendarX } from 'lucide-react';
+import { Play, History, CheckCircle, Circle, Target, Search, CalendarX, Hand, Star } from 'lucide-react';
 import prisma from '@ailearn/database';
 import { auth } from '../../../auth';
 import { redirect } from 'next/navigation';
@@ -113,7 +113,7 @@ export default async function StudentDashboard() {
       {/* Welcome Header */}
       <div className={styles.welcomeHeader}>
         <div>
-          <h1 className="heading-2">Olá, {userName.split(' ')[0]}! 👋</h1>
+          <h1 className="heading-2">Olá, {userName.split(' ')[0]}! <Hand size={28} style={{display: 'inline-block', verticalAlign: 'text-bottom', color: 'var(--color-primary)'}} /></h1>
           <p className="text-muted">Pronto para dominar IA hoje?</p>
         </div>
         <Link href="/search" className="btn btn--primary">
@@ -150,7 +150,7 @@ export default async function StudentDashboard() {
                           </div>
                           <div>
                             <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--color-text)' }}>{tutor.user.fullName}</div>
-                            <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>★ {Number(tutor.avgRating).toFixed(1)}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={12} fill="currentColor" color="var(--color-warning)" /> {Number(tutor.avgRating).toFixed(1)}</div>
                           </div>
                         </div>
                         <Link href={`/tutor/${tutor.id}`} className="btn btn--secondary btn--sm" style={{ width: '100%', justifyContent: 'center' }}>

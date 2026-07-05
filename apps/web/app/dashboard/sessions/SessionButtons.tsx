@@ -100,10 +100,10 @@ export function ReviewButton({ sessionId }: { sessionId: string }) {
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               {[1, 2, 3, 4, 5].map(n => (
                 <button key={n} onClick={() => setRating(n)} style={{
-                  background: 'none', border: 'none', cursor: 'pointer', fontSize: '28px',
+                  background: 'none', border: 'none', cursor: 'pointer',
                   color: n <= rating ? 'var(--color-warning)' : '#ddd',
                 }}>
-                  ★
+                  <Star fill="currentColor" size={28} />
                 </button>
               ))}
             </div>
