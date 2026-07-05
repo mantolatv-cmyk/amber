@@ -18,18 +18,23 @@ export default async function TutorDashboard() {
   const userId = sessionAuth.user.id;
   const userName = sessionAuth.user.name || 'Tutor';
 
-  const tutorProfile = await prisma.tutorProfile.findUnique({
-    where: { userId },
-    include: {
-      sessions: {
-        include: {
-          student: { select: { fullName: true, avatarUrl: true } },
-          subject: { select: { name: true } },
-        },
-        orderBy: { scheduledStart: 'asc' },
+  const [tutorProfile, unreadMessagesCount] = await Promise.all([
+    prisma.tutorProfile.findUnique({
+      where: { userId },
+      include: {
+        sessions: {
+          include: {
+            student: { select: { fullName: true, avatarUrl: true } },
+            subject: { select: { name: true } },
+          },
+          orderBy: { scheduledStart: 'asc' },
+        }
       }
-    }
-  });
+    }),
+    prisma.message.count({
+      where: { receiverId: userId, isRead: false }
+    })
+  ]);
 
   if (!tutorProfile) {
     return (
@@ -73,11 +78,6 @@ export default async function TutorDashboard() {
   const upcomingSessions = tutorProfile.sessions
     .filter(s => (s.status === 'confirmed' || s.status === 'pending_confirmation') && s.scheduledEnd > now)
     .slice(0, 3);
-
-  // Unread Messages
-  const unreadMessagesCount = await prisma.message.count({
-    where: { receiverId: userId, isRead: false }
-  });
 
   return (
     <div className={styles.dashboardContainer}>

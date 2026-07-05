@@ -26,42 +26,56 @@ export default async function StudentDashboard() {
   let scheduledCount = 0;
   let completedCount = 0;
   let learningGoals: string[] = [];
+  let recentSessions: any[] = [];
 
   if (userId) {
-    upcomingSession = await prisma.session.findFirst({
-      where: {
-        studentId: userId,
-        status: 'confirmed',
-        scheduledEnd: { gt: new Date() }
-      },
-      orderBy: { scheduledStart: 'asc' },
-      include: {
-        tutor: { include: { user: true } },
-        subject: true
-      }
-    });
+    const [upcomingSessionResult, completedSessions, scheduledCountResult, studentProfile, recentSessionsResult] = await Promise.all([
+      prisma.session.findFirst({
+        where: {
+          studentId: userId,
+          status: 'confirmed',
+          scheduledEnd: { gt: new Date() }
+        },
+        orderBy: { scheduledStart: 'asc' },
+        include: {
+          tutor: { include: { user: true } },
+          subject: true
+        }
+      }),
+      prisma.session.findMany({
+        where: { studentId: userId, status: 'completed' },
+        select: { durationMinutes: true },
+      }),
+      prisma.session.count({
+        where: {
+          studentId: userId,
+          status: { in: ['confirmed', 'pending_confirmation'] },
+          scheduledEnd: { gt: new Date() },
+        },
+      }),
+      prisma.studentProfile.findUnique({
+        where: { userId },
+        select: { learningGoals: true },
+      }),
+      prisma.session.findMany({
+        where: { studentId: userId, status: 'completed' },
+        orderBy: { scheduledStart: 'desc' },
+        take: 5,
+        include: {
+          tutor: { include: { user: { select: { fullName: true } } } },
+          subject: { select: { name: true } },
+          review: { select: { id: true } }
+        },
+      })
+    ]);
 
-    // Real stats
-    const completedSessions = await prisma.session.findMany({
-      where: { studentId: userId, status: 'completed' },
-      select: { durationMinutes: true },
-    });
+    upcomingSession = upcomingSessionResult;
+    scheduledCount = scheduledCountResult;
+    recentSessions = recentSessionsResult;
+    
     totalHours = Math.round(completedSessions.reduce((acc, s) => acc + s.durationMinutes, 0) / 60);
     completedCount = completedSessions.length;
 
-    scheduledCount = await prisma.session.count({
-      where: {
-        studentId: userId,
-        status: { in: ['confirmed', 'pending_confirmation'] },
-        scheduledEnd: { gt: new Date() },
-      },
-    });
-
-    // Fetch learning goals from student profile
-    const studentProfile = await prisma.studentProfile.findUnique({
-      where: { userId },
-      select: { learningGoals: true },
-    });
     if (studentProfile?.learningGoals) {
       try {
         const parsed = typeof studentProfile.learningGoals === 'string'
@@ -70,8 +84,7 @@ export default async function StudentDashboard() {
         if (Array.isArray(parsed)) learningGoals = parsed;
       } catch { /* ignore */ }
     }
-
-    // Default goals if none set
+    
     if (learningGoals.length === 0) {
       learningGoals = [
         'Aprender o básico de ChatGPT',
@@ -94,18 +107,6 @@ export default async function StudentDashboard() {
       }
     });
   }
-
-  // Fetch recent completed sessions
-  const recentSessions = userId ? await prisma.session.findMany({
-    where: { studentId: userId, status: 'completed' },
-    orderBy: { scheduledStart: 'desc' },
-    take: 5,
-    include: {
-      tutor: { include: { user: { select: { fullName: true } } } },
-      subject: { select: { name: true } },
-      review: { select: { id: true } }
-    },
-  }) : [];
 
   return (
     <div className={styles.dashboardContainer}>
