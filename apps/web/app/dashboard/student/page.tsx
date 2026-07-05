@@ -113,7 +113,7 @@ export default async function StudentDashboard() {
       {/* Welcome Header */}
       <div className={styles.welcomeHeader}>
         <div>
-          <h1 className="heading-2">Olá, {userName.split(' ')[0]}! <Hand size={28} style={{display: 'inline-block', verticalAlign: 'text-bottom', color: 'var(--color-primary)'}} /></h1>
+          <h1 className="heading-2">Olá, {userName.split(' ')[0]}!</h1>
           <p className="text-muted">Pronto para dominar IA hoje?</p>
         </div>
         <Link href="/search" className="btn btn--primary">

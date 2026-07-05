@@ -64,12 +64,12 @@ export default async function DashboardLayout({
             <input type="text" placeholder="Buscar aulas, tutores..." className={styles.searchInput} />
           </div>
           <div className={styles.topNavActions}>
-            <button className={styles.iconBtn}><Bell size={20} /></button>
-            <div className={styles.userProfile}>
+            <Link href="/dashboard/notifications" className={styles.iconBtn}><Bell size={20} /></Link>
+            <Link href="/dashboard/settings" className={styles.userProfile}>
               <div className={styles.avatar}>
                 {initials}
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
