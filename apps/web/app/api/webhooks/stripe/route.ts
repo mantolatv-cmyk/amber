@@ -131,13 +131,57 @@ export async function POST(req: NextRequest) {
                 ...EmailTemplates.sessionConfirmed(studentName, tutorName, dateStr, joinUrl)
               });
 
-              // Email to tutor
-              await sendEmail({
-                to: confirmedSession.tutor.user.email,
-                ...EmailTemplates.sessionConfirmed(tutorName, studentName, dateStr, joinUrl)
+              // In-app notifications
+              try {
+                const { createNotification } = await import("../../../../lib/notifications");
+                await Promise.all([
+                  createNotification({
+                    userId: confirmedSession.student.id,
+                    type: 'session_confirmed',
+                    title: 'Aula Confirmada!',
+                    body: `Sua aula com ${tutorName} para ${dateStr} está confirmada e sua sala está pronta.`,
+                    data: { sessionId: ourSessionId, joinUrl }
+                  }),
+                  createNotification({
+                    userId: confirmedSession.tutor.userId,
+                    type: 'session_confirmed',
+                    title: 'Aula Confirmada & Paga!',
+                    body: `${studentName} confirmou a aula de ${dateStr}. O pagamento está seguro em custódia (escrow).`,
+                    data: { sessionId: ourSessionId, joinUrl }
+                  })
+                ]);
+              } catch (notifErr) {
+                console.error("Failed to create in-app notification:", notifErr);
+              }
+            }
+          }
+        break;
+      }
+
+      case "account.updated": {
+        const account = event.data.object as any;
+        if (account.id) {
+          const isReady = account.charges_enabled && account.payouts_enabled;
+          const updated = await prisma.tutorProfile.updateMany({
+            where: { stripeAccountId: account.id },
+            data: { stripeOnboarded: isReady },
+          });
+
+          if (updated.count > 0 && isReady) {
+            const tutor = await prisma.tutorProfile.findFirst({
+              where: { stripeAccountId: account.id },
+            });
+            if (tutor) {
+              const { createNotification } = await import("../../../../lib/notifications");
+              await createNotification({
+                userId: tutor.userId,
+                type: 'system',
+                title: 'Stripe Connect Concluído!',
+                body: 'Sua conta Stripe Express foi verificada com sucesso. Você já está apto a receber repasses automáticos.',
               });
             }
           }
+        }
         break;
       }
 
@@ -148,6 +192,7 @@ export async function POST(req: NextRequest) {
         if (paymentIntentId) {
           const payment = await prisma.payment.findFirst({
             where: { stripePaymentIntentId: paymentIntentId },
+            include: { session: { include: { tutor: true } } }
           });
 
           if (payment) {
@@ -173,6 +218,15 @@ export async function POST(req: NextRequest) {
                   totalAmount: charge.amount,
                 },
               },
+            });
+
+            const { createNotification } = await import("../../../../lib/notifications");
+            await createNotification({
+              userId: payment.studentId,
+              type: 'system',
+              title: 'Reembolso Processado',
+              body: `O reembolso de R$ ${(charge.amount_refunded / 100).toFixed(2)} foi efetuado na sua fatura.`,
+              data: { paymentId: payment.id }
             });
 
             console.log(`💰 Refund processed for payment ${payment.id}`);

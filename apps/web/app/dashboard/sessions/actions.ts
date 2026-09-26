@@ -104,6 +104,29 @@ export async function cancelSession(sessionId: string) {
         )
       });
     }
+
+    try {
+      const { createNotification } = await import("../../../lib/notifications");
+      if (isTutor) {
+        await createNotification({
+          userId: fullSession.student.id,
+          type: 'session_cancelled',
+          title: 'Aula Cancelada pelo Tutor',
+          body: `Sua aula de ${dateStr} com ${fullSession.tutor.user.fullName} foi cancelada. O reembolso foi emitido.`,
+          data: { sessionId }
+        });
+      } else {
+        await createNotification({
+          userId: fullSession.tutor.userId,
+          type: 'session_cancelled',
+          title: 'Aula Cancelada pelo Aluno',
+          body: `A aula de ${dateStr} com ${fullSession.student.fullName} foi cancelada.`,
+          data: { sessionId }
+        });
+      }
+    } catch (e) {
+      console.error("Failed to notify cancellation:", e);
+    }
   }
 
   revalidatePath('/dashboard/sessions');

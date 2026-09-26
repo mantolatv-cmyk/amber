@@ -102,3 +102,74 @@ export async function updateTimezone(formData: FormData) {
     return { error: 'Erro ao atualizar fuso horário.' };
   }
 }
+
+export async function updateTutorSettings(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Não autenticado." };
+
+  const isTutor = (session.user as any).role === 'tutor';
+  if (!isTutor) return { error: "Apenas tutores podem alterar estas configurações." };
+
+  const headline = (formData.get('headline') as string) || '';
+  const bio = (formData.get('bio') as string) || '';
+  const videoIntroUrl = (formData.get('videoIntroUrl') as string) || '';
+  const yearsExperience = Number(formData.get('yearsExperience')) || 1;
+  const hourlyRate = Number(formData.get('hourlyRate')) || 100;
+  const enableTrial = formData.get('enableTrial') === 'true' || formData.get('enableTrial') === 'on';
+  const trialRate = Number(formData.get('trialRate')) || 0;
+  const subjectIdsRaw = formData.get('subjectIds') as string;
+
+  let subjectIds: string[] = [];
+  try {
+    subjectIds = subjectIdsRaw ? JSON.parse(subjectIdsRaw) : [];
+  } catch {
+    subjectIds = [];
+  }
+
+  const hourlyRateCents = Math.round(hourlyRate * 100);
+  const trialRateCents = enableTrial && trialRate > 0 ? Math.round(trialRate * 100) : null;
+
+  try {
+    const tutorProfile = await prisma.tutorProfile.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!tutorProfile) return { error: "Perfil de tutor não encontrado." };
+
+    await prisma.$transaction(async (tx) => {
+      await tx.tutorProfile.update({
+        where: { id: tutorProfile.id },
+        data: {
+          headline,
+          bio,
+          videoIntroUrl: videoIntroUrl.trim() || null,
+          yearsExperience,
+          hourlyRateCents,
+          trialRateCents,
+        },
+      });
+
+      if (subjectIds.length > 0) {
+        await tx.tutorSubject.deleteMany({
+          where: { tutorId: tutorProfile.id },
+        });
+
+        await tx.tutorSubject.createMany({
+          data: subjectIds.map((subjectId) => ({
+            tutorId: tutorProfile.id,
+            subjectId,
+          })),
+        });
+      }
+    });
+
+    revalidatePath('/dashboard/settings');
+    revalidatePath(`/tutor/${tutorProfile.id}`);
+    revalidatePath('/search');
+
+    return { success: true };
+  } catch (err) {
+    console.error('Error updating tutor settings:', err);
+    return { error: 'Erro ao atualizar configurações do tutor.' };
+  }
+}

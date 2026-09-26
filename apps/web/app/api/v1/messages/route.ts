@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@ailearn/database";
 import { requireAuth, generateUnauthorizedResponse } from "../auth";
+import { createNotification } from "../../../../lib/notifications";
 import { randomUUID } from "crypto";
 
 export async function GET(req: NextRequest) {
@@ -10,48 +11,73 @@ export async function GET(req: NextRequest) {
 
     const searchParams = req.nextUrl.searchParams;
     const contactId = searchParams.get("contactId");
+    const withUser = searchParams.get("withUser");
 
     if (!contactId) {
-      // Return contacts list
-      // 1. Get all people the user has had sessions with
-      const sessions = await prisma.session.findMany({
-        where: { OR: [{ studentId: auth.userId }, { tutor: { userId: auth.userId } }] },
-        include: {
-          student: { select: { id: true, fullName: true, avatarUrl: true } },
-          tutor: { include: { user: { select: { id: true, fullName: true, avatarUrl: true } } } },
-        }
-      });
-
-      const contactsMap = new Map();
-      sessions.forEach(s => {
-        const otherUser = s.studentId === auth.userId ? s.tutor.user : s.student;
-        if (!contactsMap.has(otherUser.id)) {
-          contactsMap.set(otherUser.id, {
-            id: otherUser.id,
-            name: otherUser.fullName,
-            avatarUrl: otherUser.avatarUrl,
-            lastMessage: null,
-          });
-        }
-      });
-
-      // 2. Add latest messages to contacts
-      const messages = await prisma.message.findMany({
-        where: { OR: [{ senderId: auth.userId }, { receiverId: auth.userId }] },
-        orderBy: { createdAt: 'desc' }
-      });
-
-      messages.forEach(m => {
-        const otherId = m.senderId === auth.userId ? m.receiverId : m.senderId;
-        if (contactsMap.has(otherId)) {
-          const contact = contactsMap.get(otherId);
-          if (!contact.lastMessage) {
-            contact.lastMessage = m;
+      // 1. Gather all unique user IDs from both sessions and message history
+      const [sessions, userMessages] = await Promise.all([
+        prisma.session.findMany({
+          where: { OR: [{ studentId: auth.userId }, { tutor: { userId: auth.userId } }] },
+          select: {
+            studentId: true,
+            tutor: { select: { userId: true } }
           }
-        }
+        }),
+        prisma.message.findMany({
+          where: { OR: [{ senderId: auth.userId }, { receiverId: auth.userId }] },
+          orderBy: { createdAt: 'desc' },
+          take: 100,
+        })
+      ]);
+
+      const contactUserIds = new Set<string>();
+
+      sessions.forEach(s => {
+        const otherId = s.studentId === auth.userId ? s.tutor.userId : s.studentId;
+        if (otherId && otherId !== auth.userId) contactUserIds.add(otherId);
       });
 
-      return NextResponse.json({ success: true, data: Array.from(contactsMap.values()) });
+      userMessages.forEach(m => {
+        const otherId = m.senderId === auth.userId ? m.receiverId : m.senderId;
+        if (otherId && otherId !== auth.userId) contactUserIds.add(otherId);
+      });
+
+      if (withUser && withUser !== auth.userId) {
+        contactUserIds.add(withUser);
+      }
+
+      if (contactUserIds.size === 0) {
+        return NextResponse.json({ success: true, data: [] });
+      }
+
+      const users = await prisma.user.findMany({
+        where: { id: { in: Array.from(contactUserIds) } },
+        select: { id: true, fullName: true, avatarUrl: true, role: true }
+      });
+
+      const contacts = users.map(user => {
+        const lastMsg = userMessages.find(
+          m => (m.senderId === user.id && m.receiverId === auth.userId) ||
+               (m.receiverId === user.id && m.senderId === auth.userId)
+        );
+
+        return {
+          id: user.id,
+          name: user.fullName,
+          avatarUrl: user.avatarUrl,
+          role: user.role,
+          lastMessage: lastMsg || null,
+        };
+      });
+
+      // Sort contacts by latest message, then name
+      contacts.sort((a, b) => {
+        const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
+        const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      return NextResponse.json({ success: true, data: contacts });
     }
 
     // Return messages for a specific contact
@@ -80,7 +106,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { receiverId, content } = body;
 
-    if (!receiverId || !content) {
+    if (!receiverId || !content?.trim()) {
       return NextResponse.json({ error: "Bad Request" }, { status: 400 });
     }
 
@@ -96,15 +122,30 @@ export async function POST(req: NextRequest) {
 
     const conversationId = existingMessage ? existingMessage.conversationId : randomUUID();
 
-    const message = await prisma.message.create({
-      data: {
-        conversationId,
-        senderId: auth.userId,
-        receiverId,
-        content,
-        contentPreview: content.substring(0, 195) + (content.length > 195 ? '...' : ''),
-        isRead: false,
-      }
+    const [message, sender] = await Promise.all([
+      prisma.message.create({
+        data: {
+          conversationId,
+          senderId: auth.userId,
+          receiverId,
+          content: content.trim(),
+          contentPreview: content.trim().substring(0, 195) + (content.trim().length > 195 ? '...' : ''),
+          isRead: false,
+        }
+      }),
+      prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: { fullName: true }
+      })
+    ]);
+
+    // Send in-app notification to receiver
+    await createNotification({
+      userId: receiverId,
+      type: 'new_message',
+      title: `Nova mensagem de ${sender?.fullName || 'Usuário'}`,
+      body: content.trim().substring(0, 90),
+      data: { senderId: auth.userId, conversationId },
     });
 
     return NextResponse.json({ success: true, data: message });

@@ -45,7 +45,7 @@ export default function RegisterPage() {
       toast.error('Conta criada, mas falha no login.');
       setIsLoading(false);
     } else {
-      router.push('/dashboard');
+      router.push(role === 'tutor' ? '/onboarding/tutor' : '/dashboard');
     }
   };
 

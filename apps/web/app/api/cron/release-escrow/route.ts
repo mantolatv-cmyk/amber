@@ -100,6 +100,19 @@ export async function GET(req: NextRequest) {
         successCount++;
         console.log(`✅ Escrow released for payment ${payment.id}. Transferred ${tutorPayoutCents} to ${tutor.stripeAccountId}`);
 
+        try {
+          const { createNotification } = await import("../../../../lib/notifications");
+          await createNotification({
+            userId: tutor.userId,
+            type: 'payment_received',
+            title: 'Repasse Liberado!',
+            body: `Seu repasse de R$ ${(tutorPayoutCents / 100).toFixed(2)} foi transferido para sua conta Stripe Express.`,
+            data: { paymentId: payment.id, sessionId: payment.sessionId }
+          });
+        } catch (notifErr) {
+          console.error("Failed to notify payout:", notifErr);
+        }
+
       } catch (err: any) {
         console.error(`Failed to release payment ${payment.id}:`, err);
         errorCount++;

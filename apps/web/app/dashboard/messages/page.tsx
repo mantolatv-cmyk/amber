@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Send, MessageSquare, Loader2 } from 'lucide-react';
 import styles from './messages.module.css';
 
@@ -19,7 +20,11 @@ interface Message {
   createdAt: string;
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
+  const searchParams = useSearchParams();
+  const contactIdParam = searchParams.get('contactId');
+  const nameParam = searchParams.get('name');
+
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -32,10 +37,34 @@ export default function MessagesPage() {
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const res = await fetch('/api/v1/messages');
+        const url = contactIdParam 
+          ? `/api/v1/messages?withUser=${contactIdParam}`
+          : '/api/v1/messages';
+        const res = await fetch(url);
         const data = await res.json();
         if (data.success) {
-          setContacts(data.data);
+          let list = data.data;
+
+          // If param provided and not yet in contacts list, add placeholder
+          if (contactIdParam && !list.some((c: any) => c.id === contactIdParam)) {
+            const newContact: Contact = {
+              id: contactIdParam,
+              name: nameParam || 'Tutor',
+              avatarUrl: null,
+              lastMessage: null,
+            };
+            list = [newContact, ...list];
+          }
+
+          setContacts(list);
+
+          // Select the target contact or first contact
+          if (contactIdParam) {
+            const target = list.find((c: any) => c.id === contactIdParam);
+            if (target) setActiveContact(target);
+          } else if (list.length > 0 && !activeContact) {
+            setActiveContact(list[0]);
+          }
         }
       } catch (err) {
         console.error('Failed to load contacts', err);
@@ -44,7 +73,7 @@ export default function MessagesPage() {
       }
     };
     fetchContacts();
-  }, []);
+  }, [contactIdParam, nameParam]);
 
   // Fetch messages when a contact is selected
   useEffect(() => {
@@ -196,5 +225,17 @@ export default function MessagesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '60px' }}>
+        <Loader2 size={32} className="spin" color="var(--color-primary)" />
+      </div>
+    }>
+      <MessagesContent />
+    </Suspense>
   );
 }

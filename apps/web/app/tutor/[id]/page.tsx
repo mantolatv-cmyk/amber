@@ -217,7 +217,11 @@ export default async function TutorProfilePage({ params }: any) {
                 Agendar Aula Regular
               </Link>
 
-              <Link href="/dashboard/messages" className={`${styles.bookingBtn} ${styles.bookingBtnSecondary}`} id="send-message-btn">
+              <Link 
+                href={`/dashboard/messages?contactId=${tutor.userId}&name=${encodeURIComponent(name)}`} 
+                className={`${styles.bookingBtn} ${styles.bookingBtnSecondary}`} 
+                id="send-message-btn"
+              >
                 <MessageCircle size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Enviar Mensagem
               </Link>
 

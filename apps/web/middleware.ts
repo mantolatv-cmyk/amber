@@ -21,6 +21,8 @@ const PUBLIC_ROUTES = [
   "/register",
   "/search",
   "/enterprise",
+  "/terms",
+  "/privacy",
 ];
 
 // Route prefixes that are always public
@@ -38,6 +40,8 @@ const PUBLIC_PREFIXES = [
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/classroom",
+  "/admin",
+  "/onboarding",
   "/api/v1/",
 ];
 
@@ -60,7 +64,7 @@ function isProtectedRoute(pathname: string): boolean {
   return false;
 }
 
-export default auth((req: any) => {
+const middleware = auth((req: any) => {
   const { pathname } = req.nextUrl;
 
   // Always allow public routes
@@ -84,10 +88,18 @@ export default auth((req: any) => {
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }
+
+    // Role-based protection: only admin can access /admin routes
+    if (pathname.startsWith("/admin") && req.auth.user.role !== "admin") {
+      const redirectUrl = new URL("/dashboard", req.url);
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return NextResponse.next();
-});
+}) as any;
+
+export default middleware;
 
 export const config = {
   // Match all routes except static files and Next.js internals

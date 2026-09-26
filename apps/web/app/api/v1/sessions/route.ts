@@ -143,6 +143,20 @@ export async function POST(req: NextRequest) {
       return { session, payment };
     });
 
+    // Notify tutor of the new booking request
+    try {
+      const { createNotification } = await import("../../../../lib/notifications");
+      await createNotification({
+        userId: tutor.userId,
+        type: 'session_booked',
+        title: 'Nova solicitação de aula',
+        body: `Uma aula foi agendada para ${start.toLocaleString('pt-BR')}. Aguardando confirmação do pagamento.`,
+        data: { sessionId: result.session.id },
+      });
+    } catch (notifErr) {
+      console.error("Failed to notify tutor:", notifErr);
+    }
+
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     // 6. Create Stripe Checkout Session

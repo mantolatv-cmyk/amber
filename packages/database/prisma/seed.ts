@@ -315,6 +315,24 @@ async function main() {
 
   console.log(`✅ Created student: ${student.fullName}`);
 
+  // ============================================================
+  // Sample Admin User
+  // ============================================================
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@openlearn.com' },
+    update: {},
+    create: {
+      passwordHash: defaultPasswordHash,
+      email: 'admin@openlearn.com',
+      fullName: 'Administrador OpenLearn',
+      role: 'admin',
+      timezone: 'America/Sao_Paulo',
+      emailVerified: true,
+    },
+  });
+
+  console.log(`✅ Created admin: ${admin.fullName} (${admin.email})`);
+
   console.log('\n🎉 Seed completed successfully!');
 }
 

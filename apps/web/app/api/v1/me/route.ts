@@ -19,7 +19,24 @@ export async function GET(req: NextRequest) {
         role: true,
         timezone: true,
         tutorProfile: {
-          select: { headline: true, bio: true },
+          select: {
+            id: true,
+            headline: true,
+            bio: true,
+            hourlyRateCents: true,
+            trialRateCents: true,
+            videoIntroUrl: true,
+            yearsExperience: true,
+            status: true,
+            stripeOnboarded: true,
+            subjects: {
+              include: {
+                subject: {
+                  select: { id: true, name: true, category: true }
+                }
+              }
+            }
+          },
         },
       },
     });
@@ -39,6 +56,7 @@ export async function GET(req: NextRequest) {
         timezone: user.timezone,
         headline: user.tutorProfile?.headline || '',
         bio: user.tutorProfile?.bio || '',
+        tutorProfile: user.tutorProfile || null,
       },
     });
   } catch (error) {
