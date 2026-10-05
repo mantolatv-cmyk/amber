@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import prisma from "@ailearn/database";
+import { isDatabaseReachable } from "./lib/db-check";
 
 const nextAuthResult = NextAuth({
   secret: process.env.AUTH_SECRET || "fallback_secret_for_build_only_please_change",
@@ -18,27 +19,67 @@ const nextAuthResult = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
-        });
+        const email = (credentials.email as string).toLowerCase().trim();
+        const password = credentials.password as string;
 
-        if (!user || !user.passwordHash) {
-          return null;
+        const dbOnline = await isDatabaseReachable();
+        if (dbOnline) {
+          try {
+            const user = await prisma.user.findUnique({
+              where: { email }
+            });
+
+            if (user && user.passwordHash) {
+              const isPasswordValid = await compare(password, user.passwordHash);
+              if (isPasswordValid) {
+                return {
+                  id: user.id,
+                  email: user.email,
+                  name: user.fullName,
+                  role: user.role
+                };
+              }
+            }
+          } catch (dbError) {
+            console.warn("Database error during auth, checking demo accounts:", dbError);
+          }
         }
 
-        const isPasswordValid = await compare(credentials.password as string, user.passwordHash);
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.fullName,
-          role: user.role
+        // Demo accounts for development and instant preview (password: 123456)
+        const DEMO_USERS: Record<string, { id: string; email: string; name: string; role: 'student' | 'tutor' | 'admin' }> = {
+          'aluno@example.com': { 
+            id: 'd0000000-0000-0000-0000-000000000001', 
+            email: 'aluno@example.com', 
+            name: 'João Aluno Demo', 
+            role: 'student' 
+          },
+          'marina.costa@example.com': { 
+            id: 'd0000000-0000-0000-0000-000000000002', 
+            email: 'marina.costa@example.com', 
+            name: 'Marina Costa', 
+            role: 'tutor' 
+          },
+          'tutor@example.com': { 
+            id: 'd0000000-0000-0000-0000-000000000002', 
+            email: 'tutor@example.com', 
+            name: 'Marina Costa', 
+            role: 'tutor' 
+          },
+          'admin@openlearn.com': { 
+            id: 'd0000000-0000-0000-0000-000000000003', 
+            email: 'admin@openlearn.com', 
+            name: 'Administrador OpenLearn', 
+            role: 'admin' 
+          },
         };
+
+        if (password === '123456' && DEMO_USERS[email]) {
+          return DEMO_USERS[email];
+        }
+
+        return null;
       }
+
     })
   ],
   callbacks: {

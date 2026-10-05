@@ -8,9 +8,12 @@ export default async function DashboardIndex() {
     redirect('/login');
   }
 
-  if (session.user.role === 'tutor') {
+  if (session.user.role === 'admin') {
+    redirect('/admin');
+  } else if (session.user.role === 'tutor') {
     redirect('/dashboard/tutor');
   } else {
     redirect('/dashboard/student');
   }
 }
+

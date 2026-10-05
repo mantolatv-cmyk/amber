@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { LayoutDashboard, Calendar, MessageSquare, Settings, LogOut, Bell, BookOpen, ShieldCheck } from 'lucide-react';
 import { auth } from '../../auth';
 import prisma from '@ailearn/database';
+import { isDatabaseReachable } from '../../lib/db-check';
+import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import styles from './dashboard.module.css';
 
 export default async function DashboardLayout({
@@ -16,9 +18,16 @@ export default async function DashboardLayout({
   const userName = session?.user?.name || '';
   const initials = userName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
 
-  const unreadCount = session?.user?.id
-    ? await prisma.notification.count({ where: { userId: session.user.id, isRead: false } })
-    : 0;
+  let unreadCount = 0;
+  const dbOnline = await isDatabaseReachable();
+  if (dbOnline && session?.user?.id) {
+    try {
+      unreadCount = await prisma.notification.count({ where: { userId: session.user.id, isRead: false } });
+    } catch {
+      unreadCount = 0;
+    }
+  }
+
 
   return (
     <div className={styles.dashboardWrapper}>
@@ -80,6 +89,7 @@ export default async function DashboardLayout({
             <input type="text" placeholder="Buscar aulas, tutores..." className={styles.searchInput} />
           </div>
           <div className={styles.topNavActions}>
+            <ThemeToggle />
             <Link href="/dashboard/notifications" className={styles.iconBtn} style={{ position: 'relative' }}>
               <Bell size={20} />
               {unreadCount > 0 && (

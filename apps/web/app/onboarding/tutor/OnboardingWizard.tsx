@@ -3,7 +3,25 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Check, ArrowRight, ArrowLeft, Loader2, Video, DollarSign, Calendar, BookOpen, User } from 'lucide-react';
+import { 
+  Check, 
+  ArrowRight, 
+  ArrowLeft, 
+  Loader2, 
+  Video, 
+  DollarSign, 
+  Calendar, 
+  BookOpen, 
+  User, 
+  Sparkles, 
+  Star, 
+  TrendingUp, 
+  ShieldCheck, 
+  Clock, 
+  Zap,
+  Plus,
+  X
+} from 'lucide-react';
 import { submitTutorOnboarding } from './actions';
 import styles from './onboarding.module.css';
 
@@ -19,13 +37,19 @@ interface OnboardingWizardProps {
 }
 
 const DAYS = [
-  { id: 0, label: 'Dom' },
-  { id: 1, label: 'Seg' },
-  { id: 2, label: 'Ter' },
-  { id: 3, label: 'Qua' },
-  { id: 4, label: 'Qui' },
-  { id: 5, label: 'Sex' },
-  { id: 6, label: 'Sáb' },
+  { id: 0, label: 'Dom', full: 'Domingo' },
+  { id: 1, label: 'Seg', full: 'Segunda-feira' },
+  { id: 2, label: 'Ter', full: 'Terça-feira' },
+  { id: 3, label: 'Qua', full: 'Quarta-feira' },
+  { id: 4, label: 'Qui', full: 'Quinta-feira' },
+  { id: 5, label: 'Sex', full: 'Sexta-feira' },
+  { id: 6, label: 'Sáb', full: 'Sábado' },
+];
+
+const PRESET_SPECIALTIES = [
+  "LangChain", "LlamaIndex", "Arquitetura RAG", "Fine-tuning de LLMs",
+  "Engenharia de Prompts", "AI Agents", "OpenAI APIs", "Claude & Anthropic",
+  "HuggingFace", "Python para IA", "DeepSeek", "Automação com n8n"
 ];
 
 export default function OnboardingWizard({ subjects, initialProfile }: OnboardingWizardProps) {
@@ -36,23 +60,29 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
   // Form State
   const [headline, setHeadline] = useState(initialProfile?.headline || '');
   const [bio, setBio] = useState(initialProfile?.bio || '');
-  const [yearsExperience, setYearsExperience] = useState(initialProfile?.yearsExperience || 2);
+  const [yearsExperience, setYearsExperience] = useState(initialProfile?.yearsExperience || 3);
   const [videoIntroUrl, setVideoIntroUrl] = useState(initialProfile?.videoIntroUrl || '');
+  const [avatarPreset, setAvatarPreset] = useState('tech-lead');
 
+  // Subjects & Tags State
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(
-    initialProfile?.subjects?.map((s: any) => s.subjectId) || []
+    initialProfile?.subjects?.map((s: any) => s.subjectId) || [subjects[0]?.id || 'sub-1']
+  );
+  const [customTags, setCustomTags] = useState<string[]>(['RAG Architecture', 'LangChain']);
+  const [newTagInput, setNewTagInput] = useState('');
+
+  // Pricing State
+  const [hourlyRate, setHourlyRate] = useState<number>(
+    initialProfile?.hourlyRateCents ? initialProfile.hourlyRateCents / 100 : 150
+  );
+  const [enableTrial, setEnableTrial] = useState<boolean>(
+    initialProfile?.trialRateCents !== null ? true : true
+  );
+  const [trialRate, setTrialRate] = useState<number>(
+    initialProfile?.trialRateCents ? initialProfile.trialRateCents / 100 : 49
   );
 
-  const [hourlyRate, setHourlyRate] = useState(
-    initialProfile?.hourlyRateCents ? initialProfile.hourlyRateCents / 100 : 120
-  );
-  const [enableTrial, setEnableTrial] = useState(
-    initialProfile?.trialRateCents ? true : true
-  );
-  const [trialRate, setTrialRate] = useState(
-    initialProfile?.trialRateCents ? initialProfile.trialRateCents / 100 : 60
-  );
-
+  // Availability State
   const [selectedDays, setSelectedDays] = useState<number[]>(
     initialProfile?.availability?.length > 0
       ? initialProfile.availability.map((a: any) => a.dayOfWeek)
@@ -73,20 +103,56 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
     );
   };
 
+  const addCustomTag = (tag: string) => {
+    const clean = tag.trim();
+    if (clean && !customTags.includes(clean)) {
+      setCustomTags(prev => [...prev, clean]);
+    }
+  };
+
+  const removeCustomTag = (tag: string) => {
+    setCustomTags(prev => prev.filter(t => t !== tag));
+  };
+
+  const applySchedulePreset = (preset: 'business' | 'nights' | 'all') => {
+    if (preset === 'business') {
+      setSelectedDays([1, 2, 3, 4, 5]);
+      setStartHour('09:00');
+      setEndHour('18:00');
+    } else if (preset === 'nights') {
+      setSelectedDays([1, 2, 3, 4, 5, 6]);
+      setStartHour('18:00');
+      setEndHour('22:00');
+    } else {
+      setSelectedDays([0, 1, 2, 3, 4, 5, 6]);
+      setStartHour('08:00');
+      setEndHour('20:00');
+    }
+  };
+
   const handleNext = () => {
     if (step === 1) {
-      if (!headline.trim() || !bio.trim()) {
-        toast.error('Preencha seu título profissional e biografia.');
+      if (!headline.trim()) {
+        toast.error('Informe seu título profissional (headline).');
+        return;
+      }
+      if (!bio.trim() || bio.trim().length < 20) {
+        toast.error('Escreva uma biografia de ao menos 20 caracteres para inspirar confiança aos alunos.');
         return;
       }
     } else if (step === 2) {
       if (selectedSubjects.length === 0) {
-        toast.error('Selecione pelo menos uma especialidade.');
+        toast.error('Selecione pelo menos uma matéria principal.');
         return;
       }
     } else if (step === 3) {
-      if (!hourlyRate || hourlyRate <= 0) {
-        toast.error('Informe um valor por hora válido.');
+      if (!hourlyRate || hourlyRate < 50) {
+        toast.error('O valor mínimo por hora é de R$ 50,00.');
+        return;
+      }
+    } else if (step === 4) {
+      if (selectedDays.length === 0) {
+        toast.error('Selecione ao menos um dia da semana para atendimento.');
         return;
       }
     }
@@ -118,7 +184,7 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
         toast.error(res.error);
         setIsSubmitting(false);
       } else {
-        toast.success('Perfil de tutor configurado com sucesso!');
+        toast.success('Perfil de tutor configurado e aprovado com sucesso! Bem-vindo(a) à OpenLearn.');
         router.push('/dashboard/tutor');
       }
     } catch {
@@ -127,6 +193,11 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
     }
   };
 
+  // Financial calculations
+  const platformFeePercent = 15;
+  const netEarnings = Math.round(hourlyRate * (1 - platformFeePercent / 100));
+  const estimatedMonthly = netEarnings * 10 * 4; // 10 classes/week * 4 weeks
+
   return (
     <div className={styles.onboardingPage}>
       <div className={styles.container}>
@@ -134,9 +205,10 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
         <div className={styles.stepIndicator}>
           {[
             { num: 1, label: 'Perfil' },
-            { num: 2, label: 'Matérias' },
+            { num: 2, label: 'Especialidades' },
             { num: 3, label: 'Valores' },
             { num: 4, label: 'Horários' },
+            { num: 5, label: 'Pré-visualização' },
           ].map((item) => (
             <div
               key={item.num}
@@ -158,12 +230,17 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
 
         {/* Step Cards */}
         <div className={styles.card}>
+
+          {/* STEP 1: PERFIL */}
           {step === 1 && (
             <div>
               <div className={styles.cardHeader}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--color-primary-50)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                  <Sparkles size={14} /> Passo 1 de 5
+                </div>
                 <h1 className={styles.cardTitle}>Apresente-se aos seus futuros alunos</h1>
                 <p className={styles.cardSubtitle}>
-                  Um perfil completo e atrativo aumenta em até 5x suas chances de agendamento.
+                  Um título claro e uma biografia focada em resolução de problemas aumentam em até 5x seus agendamentos.
                 </p>
               </div>
 
@@ -175,47 +252,60 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
                 <input
                   type="text"
                   className="input"
-                  placeholder="Ex: Engenheiro de IA Senior | Especialista em LangChain e RAG"
+                  placeholder="Ex: Engenheiro de IA Sênior | Especialista em LangChain, RAG e LLMs Corporativas"
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
-                  maxLength={180}
+                  maxLength={100}
                 />
-                <span className={styles.helpText}>Esta frase aparecerá nos cards de busca.</span>
+                <span className={styles.helperText}>
+                  {headline.length}/100 caracteres. Seja específico sobre as tecnologias que você domina.
+                </span>
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Biografia e Metodologia de Ensino *</label>
+                <label className={styles.label}>
+                  <BookOpen size={16} style={{ display: 'inline', marginRight: 6 }} />
+                  Biografia & Metodologia de Ensino *
+                </label>
                 <textarea
                   className="input"
-                  rows={5}
-                  placeholder="Descreva sua experiência prática com Inteligência Artificial, os projetos em que atuou e como você conduz suas mentorias..."
+                  style={{ minHeight: '120px', resize: 'vertical' }}
+                  placeholder="Conte um pouco sobre sua trajetória profissional, projetos reais que já desenvolveu e como estrutura suas aulas práticas..."
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                 />
+                <span className={styles.helperText}>
+                  {bio.length} caracteres. Recomendamos citar se você foca em código prático, projetos do zero ou revisão arquitetural.
+                </span>
               </div>
 
-              <div className={styles.pricingRow}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Anos de Experiência</label>
-                  <input
-                    type="number"
+                  <label className={styles.label}>
+                    <TrendingUp size={16} style={{ display: 'inline', marginRight: 6 }} />
+                    Anos de Experiência com IA/Dev
+                  </label>
+                  <select
                     className="input"
-                    min={0}
-                    max={40}
                     value={yearsExperience}
                     onChange={(e) => setYearsExperience(Number(e.target.value))}
-                  />
+                  >
+                    <option value={1}>1 a 2 anos</option>
+                    <option value={3}>3 a 5 anos</option>
+                    <option value={6}>6 a 8 anos</option>
+                    <option value={9}>9+ anos (Sênior / Lead)</option>
+                  </select>
                 </div>
 
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
                     <Video size={16} style={{ display: 'inline', marginRight: 6 }} />
-                    Link do Vídeo de Apresentação (Opcional)
+                    Vídeo de Apresentação (YouTube / Vimeo)
                   </label>
                   <input
                     type="url"
                     className="input"
-                    placeholder="https://youtube.com/watch?v=... ou Loom"
+                    placeholder="https://youtube.com/watch?v=..."
                     value={videoIntroUrl}
                     onChange={(e) => setVideoIntroUrl(e.target.value)}
                   />
@@ -224,128 +314,273 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
             </div>
           )}
 
+          {/* STEP 2: ESPECIALIDADES */}
           {step === 2 && (
             <div>
               <div className={styles.cardHeader}>
-                <h1 className={styles.cardTitle}>O que você ensina?</h1>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--color-primary-50)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                  <Sparkles size={14} /> Passo 2 de 5
+                </div>
+                <h1 className={styles.cardTitle}>Suas Especialidades & Matérias</h1>
                 <p className={styles.cardSubtitle}>
-                  Selecione as especialidades de IA em que você oferece mentoria e aulas práticas.
+                  Selecione as disciplinas principais que você deseja ensinar na OpenLearn.
                 </p>
               </div>
 
-              <div className={styles.subjectsGrid}>
-                {subjects.map((sub) => {
-                  const active = selectedSubjects.includes(sub.id);
-                  return (
-                    <div
-                      key={sub.id}
-                      className={`${styles.subjectChip} ${active ? styles.subjectChipActive : ''}`}
-                      onClick={() => toggleSubject(sub.id)}
-                    >
-                      <div>
-                        <span>{sub.name}</span>
-                        <span className={styles.badgeCategory}>{sub.category}</span>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Disciplinas da Plataforma (Selecione ao menos uma):</label>
+                <div className={styles.subjectsGrid}>
+                  {subjects.map((sub) => {
+                    const isSelected = selectedSubjects.includes(sub.id);
+                    return (
+                      <div
+                        key={sub.id}
+                        className={`${styles.subjectCard} ${isSelected ? styles.subjectCardActive : ''}`}
+                        onClick={() => toggleSubject(sub.id)}
+                      >
+                        <div className={styles.subjectCheckbox}>
+                          {isSelected && <Check size={14} color="#fff" />}
+                        </div>
+                        <div>
+                          <div className={styles.subjectName}>{sub.name}</div>
+                          <span className={styles.subjectCategory}>{sub.category}</span>
+                        </div>
                       </div>
-                      {active && <Check size={18} color="var(--color-primary)" />}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Custom Specialty Tags */}
+              <div className={styles.formGroup} style={{ marginTop: '24px' }}>
+                <label className={styles.label}>Palavras-chave e Tags de Destaque:</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                  {PRESET_SPECIALTIES.map((preset) => {
+                    const isAdded = customTags.includes(preset);
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={`${styles.tagButton} ${isAdded ? styles.tagButtonAdded : ''}`}
+                        onClick={() => isAdded ? removeCustomTag(preset) : addCustomTag(preset)}
+                      >
+                        {isAdded ? '✓ ' : '+ '} {preset}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Adicionar outra tag (ex: CrewAI, vLLM, Ollama)..."
+                    value={newTagInput}
+                    onChange={(e) => setNewTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newTagInput.trim()) {
+                          addCustomTag(newTagInput);
+                          setNewTagInput('');
+                        }
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      if (newTagInput.trim()) {
+                        addCustomTag(newTagInput);
+                        setNewTagInput('');
+                      }
+                    }}
+                  >
+                    Adicionar
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
+          {/* STEP 3: VALORES & TRANSPARÊNCIA */}
           {step === 3 && (
             <div>
               <div className={styles.cardHeader}>
-                <h1 className={styles.cardTitle}>Defina sua remuneração</h1>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--color-primary-50)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                  <Sparkles size={14} /> Passo 3 de 5
+                </div>
+                <h1 className={styles.cardTitle}>Defina seu Preço e Ganhos</h1>
                 <p className={styles.cardSubtitle}>
-                  Você recebe seus repasses automaticamente via Stripe após a conclusão de cada aula.
+                  Você tem controle total sobre o valor da sua hora. Veja exatamente quanto receberá por aula.
                 </p>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Valor por Hora de Aula (R$) *</label>
-                <div className={styles.inputPrefixWrapper}>
-                  <span className={styles.inputPrefix}>R$</span>
-                  <input
-                    type="number"
-                    className={`input ${styles.inputWithPrefix}`}
-                    min={30}
-                    max={2000}
-                    step={10}
-                    value={hourlyRate}
-                    onChange={(e) => setHourlyRate(Number(e.target.value))}
-                  />
-                </div>
-                <span className={styles.helpText}>Valor padrão para 60 minutos de mentoria individual.</span>
-              </div>
-
-              <div style={{ marginTop: '24px', padding: '16px', background: 'var(--color-surface-hover)', borderRadius: '12px' }}>
-                <label className={styles.trialToggle}>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={enableTrial}
-                    onChange={(e) => setEnableTrial(e.target.checked)}
-                  />
-                  <div>
-                    <span style={{ fontWeight: 600 }}>Oferecer Aula Experimental com desconto</span>
-                    <span className={styles.helpText}>Alunos tendem a fechar pacotes regulares após a primeira aula.</span>
-                  </div>
-                </label>
-
-                {enableTrial && (
-                  <div className={styles.formGroup} style={{ marginTop: '16px' }}>
-                    <label className={styles.label}>Valor da Aula Experimental (R$)</label>
-                    <div className={styles.inputPrefixWrapper}>
-                      <span className={styles.inputPrefix}>R$</span>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
+                <div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      <DollarSign size={16} style={{ display: 'inline', marginRight: 4 }} />
+                      Valor por Hora (Aula Regular de 60 min)
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
+                        R$
+                      </span>
                       <input
                         type="number"
-                        className={`input ${styles.inputWithPrefix}`}
-                        min={0}
-                        max={hourlyRate}
-                        step={5}
-                        value={trialRate}
-                        onChange={(e) => setTrialRate(Number(e.target.value))}
+                        className="input"
+                        style={{ paddingLeft: '44px', fontSize: '18px', fontWeight: 700 }}
+                        value={hourlyRate}
+                        onChange={(e) => setHourlyRate(Number(e.target.value))}
+                        min={50}
+                        step={10}
                       />
                     </div>
+                    <span className={styles.helperText}>Média recomendada para tutores de IA: R$ 120 a R$ 220/hora.</span>
                   </div>
-                )}
+
+                  <div className={styles.formGroup}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                      <input
+                        type="checkbox"
+                        checked={enableTrial}
+                        onChange={(e) => setEnableTrial(e.target.checked)}
+                        style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)' }}
+                      />
+                      Oferecer Aula Experimental com Desconto (30 min)
+                    </label>
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                      Tutores com aula experimental recebem 3.8x mais primeiros contatos de alunos.
+                    </p>
+                  </div>
+
+                  {enableTrial && (
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Valor da Aula Experimental (30 min)</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
+                          R$
+                        </span>
+                        <input
+                          type="number"
+                          className="input"
+                          style={{ paddingLeft: '44px', fontSize: '16px', fontWeight: 600 }}
+                          value={trialRate}
+                          onChange={(e) => setTrialRate(Number(e.target.value))}
+                          min={0}
+                          step={5}
+                        />
+                      </div>
+                      <span className={styles.helperText}>Pode ser gratuita (R$ 0) ou valor promocional (ex: R$ 49).</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Live Earnings Projection Card */}
+                <div style={{ background: 'var(--color-bg-subtle)', borderRadius: '16px', border: '1px solid var(--color-border)', padding: '20px' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldCheck size={18} color="#10b981" /> Extrato Líquido por Aula
+                  </h4>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                    <span style={{ color: 'var(--color-text-secondary)' }}>Valor cobrado do aluno:</span>
+                    <span style={{ fontWeight: 600 }}>R$ {hourlyRate.toFixed(2)}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-muted)' }}>
+                    <span>Taxa da plataforma (15%):</span>
+                    <span>- R$ {(hourlyRate * 0.15).toFixed(2)}</span>
+                  </div>
+
+                  <div style={{ height: '1px', background: 'var(--color-border)', margin: '12px 0' }} />
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 700 }}>
+                    <span style={{ color: 'var(--color-text)' }}>Você recebe líquido:</span>
+                    <span style={{ color: '#10b981', fontSize: '20px' }}>R$ {netEarnings.toFixed(2)}</span>
+                  </div>
+
+                  <div style={{ marginTop: '16px', padding: '12px', background: 'var(--color-surface)', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+                      Projeção Mensal (10 aulas/semana):
+                    </div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-primary)' }}>
+                      ~ R$ {estimatedMonthly.toLocaleString('pt-BR')} /mês
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                      ⚡ Repasse automático via PIX em até 24h após a confirmação da aula.
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
+          {/* STEP 4: HORÁRIOS */}
           {step === 4 && (
             <div>
               <div className={styles.cardHeader}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--color-primary-50)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                  <Sparkles size={14} /> Passo 4 de 5
+                </div>
                 <h1 className={styles.cardTitle}>Disponibilidade de Atendimento</h1>
                 <p className={styles.cardSubtitle}>
-                  Defina os dias da semana e horários em que os alunos podem agendar aulas com você.
+                  Defina os dias da semana e a faixa de horários em que os alunos podem agendar aulas com você.
                 </p>
               </div>
 
+              {/* Quick Presets */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className={styles.presetBtn}
+                  onClick={() => applySchedulePreset('business')}
+                >
+                  ⚡ Horário Comercial (Seg-Sex, 09h às 18h)
+                </button>
+                <button
+                  type="button"
+                  className={styles.presetBtn}
+                  onClick={() => applySchedulePreset('nights')}
+                >
+                  🌙 Noites (18h às 22h)
+                </button>
+                <button
+                  type="button"
+                  className={styles.presetBtn}
+                  onClick={() => applySchedulePreset('all')}
+                >
+                  🌟 Integral (Todos os dias)
+                </button>
+              </div>
+
               <div className={styles.formGroup}>
-                <label className={styles.label}>Dias da Semana Disponíveis</label>
+                <label className={styles.label}>Dias da semana ativos:</label>
                 <div className={styles.daysGrid}>
-                  {DAYS.map((d) => {
-                    const active = selectedDays.includes(d.id);
+                  {DAYS.map((day) => {
+                    const isSelected = selectedDays.includes(day.id);
                     return (
                       <button
-                        key={d.id}
+                        key={day.id}
                         type="button"
-                        className={`${styles.dayBtn} ${active ? styles.dayBtnActive : ''}`}
-                        onClick={() => toggleDay(d.id)}
+                        className={`${styles.dayBtn} ${isSelected ? styles.dayBtnActive : ''}`}
+                        onClick={() => toggleDay(day.id)}
                       >
-                        {d.label}
+                        <span className={styles.dayBtnLabel}>{day.label}</span>
+                        <span className={styles.dayBtnSub}>{isSelected ? 'Ativo' : 'Folga'}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              <div className={styles.pricingRow} style={{ marginTop: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Horário Inicial (Horário de Brasília)</label>
+                  <label className={styles.label}>
+                    <Clock size={16} style={{ display: 'inline', marginRight: 4 }} />
+                    Horário Inicial de Atendimento
+                  </label>
                   <input
                     type="time"
                     className="input"
@@ -355,7 +590,10 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Horário Final</label>
+                  <label className={styles.label}>
+                    <Clock size={16} style={{ display: 'inline', marginRight: 4 }} />
+                    Horário Final de Atendimento
+                  </label>
                   <input
                     type="time"
                     className="input"
@@ -367,45 +605,120 @@ export default function OnboardingWizard({ subjects, initialProfile }: Onboardin
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className={styles.actions}>
-            {step > 1 ? (
+          {/* STEP 5: LIVE PREVIEW */}
+          {step === 5 && (
+            <div>
+              <div className={styles.cardHeader}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', color: '#065f46', padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                  <Check size={14} /> Passo Final
+                </div>
+                <h1 className={styles.cardTitle}>Pré-visualização do Seu Perfil Público</h1>
+                <p className={styles.cardSubtitle}>
+                  Confira como os alunos verão seu card de tutor no catálogo e nas buscas.
+                </p>
+              </div>
+
+              {/* Tutor Preview Card */}
+              <div className={styles.previewCard}>
+                <div className={styles.previewCardTop}>
+                  <div className={styles.previewAvatar}>
+                    <User size={32} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <h3 className={styles.previewName}>{headline.split('|')[0]?.trim() || 'Tutor de Inteligência Artificial'}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#f59e0b', fontWeight: 700 }}>
+                          <Star size={14} fill="#f59e0b" /> Novo Tutor (5.0 ★) • {yearsExperience}+ anos exp.
+                        </div>
+                      </div>
+                      <div className={styles.previewPriceBox}>
+                        <div className={styles.previewPriceVal}>R$ {hourlyRate.toFixed(0)}</div>
+                        <div className={styles.previewPriceSub}>por hora</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p className={styles.previewHeadline}>{headline}</p>
+                <p className={styles.previewBio}>{bio}</p>
+
+                <div className={styles.previewTags}>
+                  {customTags.map(tag => (
+                    <span key={tag} className={styles.previewTag}>#{tag}</span>
+                  ))}
+                </div>
+
+                <div className={styles.previewFooter}>
+                  <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Calendar size={15} color="var(--color-primary)" />
+                    Disponível: {selectedDays.length} dias por semana ({startHour} às {endHour})
+                  </div>
+                  {enableTrial && (
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)', background: 'var(--color-primary-50)', padding: '4px 8px', borderRadius: '8px' }}>
+                      Aula experimental por R$ {trialRate.toFixed(0)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Controls */}
+          <div className={styles.cardFooter}>
+            {step > 1 && (
               <button
                 type="button"
-                className="btn btn--secondary"
+                className="btn btn-secondary"
                 onClick={handleBack}
                 disabled={isSubmitting}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
                 <ArrowLeft size={16} /> Voltar
               </button>
-            ) : <div />}
-
-            {step < 4 ? (
-              <button
-                type="button"
-                className="btn btn--primary"
-                onClick={handleNext}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                Próximo <ArrowRight size={16} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn--primary"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                {isSubmitting ? (
-                  <>Salvando Perfil... <Loader2 size={16} className="spin" /></>
-                ) : (
-                  <>Concluir e Ir ao Painel <Check size={16} /></>
-                )}
-              </button>
             )}
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px' }}>
+              {step < 5 ? (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleNext}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                >
+                  Continuar <ArrowRight size={16} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    padding: '12px 24px', 
+                    fontSize: '15px', 
+                    fontWeight: 700,
+                    background: '#10b981',
+                    borderColor: '#10b981'
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={18} className="spin" /> Publicando perfil...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={18} /> Publicar Perfil de Tutor
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
+
         </div>
       </div>
     </div>

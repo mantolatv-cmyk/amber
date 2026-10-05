@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react';
 import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
+import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import styles from './Header.module.css';
 
 interface NavLink {
@@ -78,6 +79,8 @@ export default function Header({
           )}
 
           <div className={styles.navActions}>
+            <ThemeToggle />
+
             {backLink && (
               <a
                 href={backLink.href}

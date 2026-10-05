@@ -34,6 +34,7 @@
   --color-bg-muted: #F1F3F8;
   --color-surface: #FFFFFF;
   --color-surface-raised: #FFFFFF;
+  --color-surface-hover: #F8FAFC;
   --color-border: #E2E6F0;
   --color-border-subtle: #ECEEF4;
 
@@ -146,6 +147,82 @@
   --z-modal-backdrop: 40;
   --z-modal: 50;
   --z-toast: 60;
+}
+
+/* ============================================================
+   Dark Mode Tokens (AI Developer Theme)
+   ============================================================ */
+[data-theme="dark"] {
+  /* ---- Brand Colors ---- */
+  --color-primary: #7C3AED;
+  --color-primary-light: #A78BFA;
+  --color-primary-dark: #6D28D9;
+  --color-primary-50: #1E1B4B;
+  --color-primary-100: #2E1065;
+  --color-primary-200: #4C1D95;
+  --color-primary-500: #7C3AED;
+  --color-primary-600: #6D28D9;
+  --color-primary-700: #5B21B6;
+  --color-primary-900: #0F0826;
+
+  /* ---- Accent Colors ---- */
+  --color-accent: #38BDF8;
+  --color-accent-warm: #FB7185;
+  --color-accent-green: #34D399;
+  --color-accent-amber: #FBBF24;
+
+  /* ---- Neutral Colors ---- */
+  --color-bg: #090D16;
+  --color-bg-subtle: #0F172A;
+  --color-bg-muted: #1E293B;
+  --color-surface: #131B2E;
+  --color-surface-raised: #1E293B;
+  --color-surface-hover: #1E293B;
+  --color-border: #243048;
+  --color-border-subtle: #1A2234;
+
+  /* ---- Text Colors ---- */
+  --color-text: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #090D16;
+  --color-text-link: #A78BFA;
+
+  /* ---- Special Surfaces ---- */
+  --color-surface-glass: rgba(19, 27, 46, 0.75);
+
+  /* ---- Semantic Colors ---- */
+  --color-success: #34D399;
+  --color-success-bg: rgba(52, 211, 153, 0.12);
+  --color-warning: #FBBF24;
+  --color-warning-bg: rgba(251, 191, 36, 0.12);
+  --color-error: #FB7185;
+  --color-error-bg: rgba(251, 113, 133, 0.12);
+  --color-info: #38BDF8;
+  --color-info-bg: rgba(56, 189, 248, 0.12);
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 4px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 50px -12px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 40px rgba(124, 58, 237, 0.3);
+  --shadow-glow-accent: 0 0 40px rgba(56, 189, 248, 0.25);
+
+  /* ---- Gradients ---- */
+  --gradient-primary: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+  --gradient-hero: linear-gradient(135deg, #090D16 0%, #0F172A 50%, #1E1B4B 100%);
+  --gradient-surface: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  --gradient-mesh: radial-gradient(at 40% 20%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                   radial-gradient(at 80% 0%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+                   radial-gradient(at 0% 50%, rgba(167, 139, 250, 0.08) 0%, transparent 50%);
+}
+
+/* Base theme transition */
+html, body {
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 
@@ -478,6 +555,36 @@ input, textarea, select {
   padding: var(--space-4) var(--space-5);
   font-size: var(--text-base);
   border-radius: var(--radius-xl);
+}
+
+/* Dark Mode Form & Text Box Overrides */
+[data-theme="dark"] .input,
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]),
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .input:focus,
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]):focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  background-color: var(--color-surface);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+}
+
+[data-theme="dark"] .input::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
 }
 
 /* ============================================================

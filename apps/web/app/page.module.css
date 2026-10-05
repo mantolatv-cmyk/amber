@@ -470,8 +470,12 @@
   font-size: var(--text-xs);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--color-primary);
+  padding: 5px 14px;
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+  border-radius: var(--radius-full);
   margin-bottom: var(--space-4);
 }
 
@@ -974,3 +978,162 @@
   font-size: var(--text-xs);
   color: rgba(255, 255, 255, 0.3);
 }
+
+/* ============================================================
+   Dark Mode Refinements for Landing Page
+   "Matérias", "Tutores", "Como funciona"
+   ============================================================ */
+
+/* ---- Headers & Badges ---- */
+:global([data-theme="dark"]) .sectionLabel {
+  background: rgba(124, 58, 237, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  color: var(--color-primary-light);
+}
+
+:global([data-theme="dark"]) .sectionTitle {
+  color: #F8FAFC;
+}
+
+:global([data-theme="dark"]) .sectionSubtitle {
+  color: #94A3B8;
+}
+
+/* ---- 1. MATÉRIAS (SUBJECTS) ---- */
+:global([data-theme="dark"]) .subjects {
+  background: var(--color-bg);
+}
+
+:global([data-theme="dark"]) .subjectGroupTitle {
+  color: #F8FAFC;
+}
+
+:global([data-theme="dark"]) .subjectGroupDesc {
+  color: #94A3B8;
+}
+
+:global([data-theme="dark"]) .subjectCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:global([data-theme="dark"]) .subjectCard::after {
+  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.15), transparent);
+}
+
+:global([data-theme="dark"]) .subjectCard:hover {
+  background: var(--color-surface-raised);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 58, 237, 0.15);
+  transform: translateY(-4px) scale(1.02);
+}
+
+:global([data-theme="dark"]) .subjectIcon {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global([data-theme="dark"]) .subjectName {
+  color: #F8FAFC;
+}
+
+:global([data-theme="dark"]) .subjectCount {
+  color: #94A3B8;
+}
+
+/* ---- 2. TUTORES (FEATURED TUTORS) ---- */
+:global([data-theme="dark"]) .tutors {
+  background: var(--color-bg-subtle);
+}
+
+:global([data-theme="dark"]) .tutorCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:global([data-theme="dark"]) .tutorCard:hover {
+  background: var(--color-surface-raised);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 0 25px rgba(124, 58, 237, 0.18);
+  transform: translateY(-6px) scale(1.01);
+}
+
+:global([data-theme="dark"]) .tutorName {
+  color: #F8FAFC;
+}
+
+:global([data-theme="dark"]) .tutorHeadline {
+  color: #94A3B8;
+}
+
+:global([data-theme="dark"]) .tutorRatingValue {
+  color: #F8FAFC;
+}
+
+:global([data-theme="dark"]) .tutorReviewCount {
+  color: #64748B;
+}
+
+:global([data-theme="dark"]) .tutorTag {
+  background: rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(124, 58, 237, 0.32);
+  color: var(--color-primary-light);
+}
+
+:global([data-theme="dark"]) .tutorBio {
+  color: #94A3B8;
+}
+
+:global([data-theme="dark"]) .tutorCardFooter {
+  border-top-color: var(--color-border);
+}
+
+:global([data-theme="dark"]) .tutorPriceValue {
+  color: #F8FAFC;
+}
+
+:global([data-theme="dark"]) .tutorPriceLabel {
+  color: #64748B;
+}
+
+:global([data-theme="dark"]) .tutorOnline {
+  border-color: var(--color-surface);
+}
+
+/* ---- 3. COMO FUNCIONA (HOW IT WORKS) ---- */
+:global([data-theme="dark"]) .howItWorks {
+  background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-subtle) 100%);
+}
+
+:global([data-theme="dark"]) .stepCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:global([data-theme="dark"]) .stepCard:hover {
+  background: var(--color-surface-raised);
+  border-color: rgba(124, 58, 237, 0.45);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 0 25px rgba(124, 58, 237, 0.15);
+  transform: translateY(-6px);
+}
+
+:global([data-theme="dark"]) .stepTitle {
+  color: #F8FAFC;
+}
+
+:global([data-theme="dark"]) .stepDesc {
+  color: #94A3B8;
+}
+
+:global([data-theme="dark"]) .stepNumber {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+

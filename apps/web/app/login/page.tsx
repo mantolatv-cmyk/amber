@@ -49,9 +49,36 @@ export default function LoginPage() {
               <p className={styles.authSubtitle}>Entre para continuar aprendendo ou ensinando na OpenLearn.</p>
             </div>
 
-
+            {/* Contas de Demonstração Rápidas */}
+            <div className={styles.demoBox}>
+              <span className={styles.demoTitle}>💡 Preenchimento Rápido (Demonstração):</span>
+              <div className={styles.demoButtons}>
+                <button
+                  type="button"
+                  className={styles.demoBtn}
+                  onClick={() => { setEmail('aluno@example.com'); setPassword('123456'); }}
+                >
+                  🎓 Aluno
+                </button>
+                <button
+                  type="button"
+                  className={styles.demoBtn}
+                  onClick={() => { setEmail('tutor@example.com'); setPassword('123456'); }}
+                >
+                  👨‍🏫 Tutor
+                </button>
+                <button
+                  type="button"
+                  className={styles.demoBtn}
+                  onClick={() => { setEmail('admin@openlearn.com'); setPassword('123456'); }}
+                >
+                  🛡️ Admin
+                </button>
+              </div>
+            </div>
 
             <form onSubmit={handleLogin} className={styles.authForm}>
+
               <div className={styles.formGroup}>
                 <label htmlFor="email" className={styles.label}>E-mail</label>
                 <input

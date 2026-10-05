@@ -13,7 +13,7 @@
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  background: var(--color-background);
+  background: var(--color-surface);
 }
 
 .sidebarHeader {
@@ -37,20 +37,20 @@
 }
 
 .contactItem:hover {
-  background: var(--color-surface);
+  background: var(--color-bg-subtle);
 }
 
 .contactActive {
-  background: white;
-  border-left: 4px solid var(--color-primary-600);
+  background: var(--color-surface);
+  border-left: 4px solid var(--color-primary);
 }
 
 .avatar {
   width: 48px;
   height: 48px;
   border-radius: var(--radius-full);
-  background: var(--color-primary-100);
-  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: white;
+  background: var(--color-surface);
 }
 
 .messagesContainer {
@@ -102,6 +102,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  background: var(--color-bg-subtle);
 }
 
 .messageWrapper {
@@ -128,13 +129,13 @@
 }
 
 .messageSelf {
-  background: var(--color-primary-600);
+  background: var(--color-primary);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .messageOther {
-  background: var(--color-background);
+  background: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
   border-bottom-left-radius: 4px;
@@ -142,7 +143,7 @@
 
 .messageTime {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   margin-top: 4px;
 }
 
@@ -150,7 +151,7 @@
 .inputArea {
   padding: var(--space-4);
   border-top: 1px solid var(--color-border);
-  background: white;
+  background: var(--color-surface);
   display: flex;
   gap: var(--space-3);
   align-items: center;
@@ -158,16 +159,24 @@
 
 .chatInput {
   flex: 1;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border);
+  padding: 12px 18px;
+  background: var(--color-bg-subtle);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-full);
   outline: none;
   font-size: 0.9375rem;
-  transition: border-color 0.2s;
+  color: var(--color-text);
+  transition: all var(--transition-fast);
 }
 
 .chatInput:focus {
-  border-color: var(--color-primary-500);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-50);
+}
+
+.chatInput::placeholder {
+  color: var(--color-text-muted);
 }
 
 .sendBtn {

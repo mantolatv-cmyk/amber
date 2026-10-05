@@ -1,15 +1,16 @@
 .onboardingPage {
-  min-height: 100vh;
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
+  min-height: calc(100vh - var(--header-height));
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text);
   display: flex;
   flex-direction: column;
+  padding: 40px 0 80px;
 }
 
 .container {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 24px 60px;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 24px;
   width: 100%;
 }
 
@@ -52,7 +53,7 @@
   justify-content: center;
   font-weight: 700;
   font-size: 14px;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .stepItemActive .stepNumber {
@@ -63,8 +64,8 @@
 }
 
 .stepItemCompleted .stepNumber {
-  background: var(--color-success);
-  border-color: var(--color-success);
+  background: #10b981;
+  border-color: #10b981;
   color: #fff;
 }
 
@@ -82,7 +83,7 @@
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 36px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
@@ -93,14 +94,15 @@
 
 .cardTitle {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 8px;
-  color: var(--color-text-primary);
+  color: var(--color-text);
+  font-family: var(--font-display);
 }
 
 .cardSubtitle {
+  font-size: 15px;
   color: var(--color-text-secondary);
-  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -110,128 +112,291 @@
 
 .label {
   display: block;
-  font-weight: 600;
   font-size: 14px;
+  font-weight: 600;
   margin-bottom: 8px;
-  color: var(--color-text-primary);
+  color: var(--color-text);
 }
 
-.helpText {
+.helperText {
   display: block;
   font-size: 12px;
   color: var(--color-text-muted);
   margin-top: 6px;
 }
 
+/* Subjects Grid */
 .subjectsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
-  margin-top: 12px;
 }
 
-.subjectChip {
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface-hover);
+.subjectCard {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  transition: all var(--transition-fast);
+}
+
+.subjectCard:hover {
+  border-color: var(--color-primary-200);
+  background: var(--color-primary-50);
+}
+
+.subjectCardActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.subjectCheckbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.subjectCardActive .subjectCheckbox {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.subjectName {
   font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.subjectCategory {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* Tags */
+.tagButton {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s ease;
-  user-select: none;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.subjectChip:hover {
-  border-color: var(--color-primary-300);
+.tagButton:hover {
+  border-color: var(--color-primary-200);
+  color: var(--color-primary);
 }
 
-.subjectChipActive {
+.tagButtonAdded {
   background: var(--color-primary-50);
   border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Schedule Presets & Days */
+.presetBtn {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.presetBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.dayBtn {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dayBtn:hover {
+  border-color: var(--color-primary-200);
+}
+
+.dayBtnActive {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary);
+}
+
+.dayBtnLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.dayBtnSub {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.dayBtnActive .dayBtnLabel {
+  color: var(--color-primary);
+}
+
+.dayBtnActive .dayBtnSub {
   color: var(--color-primary);
   font-weight: 600;
 }
 
-.pricingRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+/* Preview Card */
+.previewCard {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-.inputPrefixWrapper {
+.previewCardTop {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.previewAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #a855f7);
+  color: white;
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.inputPrefix {
-  position: absolute;
-  left: 14px;
+.previewName {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.previewPriceBox {
+  text-align: right;
+}
+
+.previewPriceVal {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.previewPriceSub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.previewHeadline {
+  font-size: 14px;
   font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.previewBio {
+  font-size: 13px;
   color: var(--color-text-secondary);
-  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 16px;
 }
 
-.inputWithPrefix {
-  padding-left: 44px !important;
-}
-
-.daysGrid {
+.previewTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
-.dayBtn {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+.previewTag {
+  font-size: 11px;
   font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  color: var(--color-primary);
+  background: var(--color-primary-50);
+  padding: 3px 8px;
+  border-radius: 12px;
 }
 
-.dayBtnActive {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
-}
-
-.actions {
+.previewFooter {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.cardFooter {
+  display: flex;
   align-items: center;
   margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid var(--color-border);
 }
 
-.trialToggle {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  cursor: pointer;
+/* ============================================================
+   Dark Mode Refinements for Onboarding
+   ============================================================ */
+:global([data-theme="dark"]) .subjectCardActive {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: var(--color-primary);
 }
 
-.checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-primary);
+:global([data-theme="dark"]) .tagButtonAdded {
+  background: rgba(124, 58, 237, 0.18);
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
 }
 
-.badgeCategory {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  display: block;
-  margin-top: 2px;
+:global([data-theme="dark"]) .dayBtnActive {
+  background: rgba(124, 58, 237, 0.18);
+  border-color: var(--color-primary);
+}
+
+:global([data-theme="dark"]) .dayBtnActive .dayBtnLabel {
+  color: var(--color-primary-light);
+}
+
+:global([data-theme="dark"]) .previewTag {
+  background: rgba(124, 58, 237, 0.18);
+  color: var(--color-primary-light);
 }

@@ -1,11 +1,11 @@
 .bookingPage {
   background: var(--color-bg-subtle);
   min-height: calc(100vh - var(--header-height));
-  padding: var(--space-10) 0;
+  padding: var(--space-8) 0 var(--space-16);
 }
 
 .container {
-  max-width: var(--container-lg);
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--space-6);
 }
@@ -31,111 +31,386 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-6);
+}
+
+.summaryCol {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .summaryCol {
+    width: 380px;
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+  }
 }
 
 .section {
   background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  padding: var(--space-8);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .sectionTitle {
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: 1.125rem;
   font-weight: 700;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text);
 }
 
-/* Time Slots */
-.slotsGrid {
+.stepBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+/* Type Selector */
+.typeSelectorGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-4);
 }
 
-.slotBtn {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-2);
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
+@media (min-width: 640px) {
+  .typeSelectorGrid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-.slotBtn:hover:not(:disabled) {
+.typeCard {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+}
+
+.typeCard:hover {
   border-color: var(--color-primary-200);
   background: var(--color-primary-50);
 }
 
-.slotActive {
+.typeCardActive {
   border-color: var(--color-primary);
   background: var(--color-primary-50);
   box-shadow: 0 0 0 1px var(--color-primary);
 }
 
-.slotDisabled {
-  opacity: 0.5;
+.typeCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.typeBadgePrimary {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--color-primary-200);
+}
+
+.typeBadgeSecondary {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.typeTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.typeDesc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-bottom: 12px;
+  flex: 1;
+}
+
+.typePrice {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.typeSavings {
+  font-size: 11px;
+  font-weight: 600;
+  color: #10b981;
+  background: #ecfdf5;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+/* Date Scroller */
+.datesScroller {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.datePill {
+  min-width: 80px;
+  padding: 12px 8px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.datePill:hover:not(:disabled) {
+  border-color: var(--color-primary-200);
+  background: var(--color-primary-50);
+}
+
+.datePillActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+.datePillEmpty {
+  opacity: 0.45;
   cursor: not-allowed;
   background: var(--color-bg-muted);
 }
 
-.slotDate {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  font-weight: 600;
+.datePillDayName {
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
+  color: inherit;
   margin-bottom: 2px;
 }
 
-.slotTime {
-  font-size: var(--text-base);
+.datePillNumber {
+  font-size: 18px;
+  font-weight: 800;
+  color: inherit;
+  line-height: 1.1;
+}
+
+.datePillMonth {
+  font-size: 11px;
+  color: inherit;
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.datePillSlotsBadge {
+  font-size: 10px;
+  font-weight: 600;
+  background: #ecfdf5;
+  color: #065f46;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.datePillActive .datePillSlotsBadge {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.datePillNoSlots {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+/* Time Slots Grid */
+.periodHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.slotsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 10px;
+}
+
+.slotBtn {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slotBtn:hover {
+  border-color: var(--color-primary-200);
+  background: var(--color-primary-50);
+}
+
+.slotBtnActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.slotTimeText {
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-text);
 }
 
-.slotActive .slotTime {
+.slotBtnActive .slotTimeText {
   color: var(--color-primary);
 }
 
-/* Summary Card */
-.sideCol {
-  width: 100%;
+.slotDurationText {
+  font-size: 11px;
+  color: var(--color-text-muted);
 }
 
-@media (min-width: 1024px) {
-  .sideCol {
-    width: 360px;
-    flex-shrink: 0;
-    position: sticky;
-    top: calc(var(--header-height) + var(--space-6));
-  }
+/* Goals */
+.goalsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
+.goalPill {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.goalPill:hover {
+  border-color: var(--color-primary-200);
+  color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+.goalPillActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+}
+
+/* Right Column Summary */
 .summaryCard {
   background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-.summaryTitle {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
+.summaryTutorInfo {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.summaryAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 700;
-  margin-bottom: var(--space-6);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.summaryTutorName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.summaryTutorHeadline {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+
+.summarySubjectBadge {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.summaryDivider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-4) 0;
+}
+
+.summarySection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .summaryRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-3);
-  font-size: var(--text-sm);
+  font-size: 14px;
 }
 
 .summaryLabel {
@@ -145,43 +420,116 @@
 .summaryValue {
   font-weight: 600;
   color: var(--color-text);
+  text-align: right;
 }
 
-.divider {
-  border: none;
-  border-top: 1px dashed var(--color-border);
-  margin: var(--space-4) 0;
-}
-
-.summaryTotal {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
+.summaryTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-text);
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border);
 }
 
-.confirmBtn {
+.summaryTotalAmount {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.submitBtn {
   width: 100%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-top: var(--space-5);
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--color-primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(108, 92, 231, 0.35);
+}
+
+.submitBtnDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.trustBadges {
   margin-top: var(--space-6);
-  padding: var(--space-4);
-  font-size: var(--text-base);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.guaranteeText {
-  margin-top: var(--space-4);
-  font-size: 11px;
+.trustBadgeItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--color-text-secondary);
-  text-align: center;
-  line-height: 1.4;
 }
 
-.errorBox {
-  margin-top: var(--space-4);
-  padding: var(--space-3);
-  background: var(--color-error-bg);
-  color: var(--color-error);
-  font-size: var(--text-sm);
-  border-radius: var(--radius-md);
-  text-align: center;
-  font-weight: 600;
+/* ============================================================
+   Dark Mode Refinements for Booking
+   ============================================================ */
+:global([data-theme="dark"]) .typeBadgePrimary {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: var(--color-primary-light);
+}
+
+:global([data-theme="dark"]) .typeSavings {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+:global([data-theme="dark"]) .datePillSlotsBadge {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+:global([data-theme="dark"]) .typeCardActive {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: var(--color-primary);
+}
+
+:global([data-theme="dark"]) .slotBtnActive {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: var(--color-primary);
+}
+
+:global([data-theme="dark"]) .slotBtnActive .slotTimeText {
+  color: var(--color-primary-light);
+}
+
+:global([data-theme="dark"]) .goalPillActive {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
+}
+
+:global([data-theme="dark"]) .summarySubjectBadge {
+  background: rgba(124, 58, 237, 0.2);
+  color: var(--color-primary-light);
 }

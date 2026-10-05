@@ -23,18 +23,22 @@ const PUBLIC_ROUTES = [
   "/enterprise",
   "/terms",
   "/privacy",
+  "/checkout",
 ];
 
-// Route prefixes that are always public
 const PUBLIC_PREFIXES = [
-  "/tutor/",         // Tutor profile pages (public)
+  "/tutor/",         // Tutor profile pages & booking (public)
+  "/checkout",       // Checkout page
   "/api/auth/",      // NextAuth handlers
   "/api/webhooks/",  // Stripe & Daily.co webhooks
+  "/api/v1/subjects", // Public catalog subjects
+  "/api/v1/tutors/", // Public tutor profile & availability
   "/_next/",         // Next.js internals
   "/favicon",        // Favicon
   "/fonts/",         // Fonts
   "/hero-",          // Public images
 ];
+
 
 // Route prefixes that require authentication
 const PROTECTED_PREFIXES = [

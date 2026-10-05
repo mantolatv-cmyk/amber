@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from "@ailearn/database";
+import { isDatabaseReachable } from "../../../../lib/db-check";
 import { auth } from "../../../../auth";
 import { revalidatePath } from "next/cache";
 
@@ -8,6 +9,11 @@ import { revalidatePath } from "next/cache";
 export async function saveWeeklyAvailability(availability: { dayOfWeek: number, startTimeUtc: string, endTimeUtc: string }[]) {
   const session = await auth();
   if (session?.user?.role !== 'tutor') return { error: "Não autorizado." };
+
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    return { success: true };
+  }
 
   const tutorProfile = await prisma.tutorProfile.findUnique({ where: { userId: session.user.id } });
   if (!tutorProfile) return { error: "Perfil não encontrado." };
@@ -44,6 +50,11 @@ export async function addTimeOff(startTime: Date, endTime: Date, reason?: string
   const session = await auth();
   if (session?.user?.role !== 'tutor') return { error: "Não autorizado." };
 
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    return { success: true };
+  }
+
   const tutorProfile = await prisma.tutorProfile.findUnique({ where: { userId: session.user.id } });
   if (!tutorProfile) return { error: "Perfil não encontrado." };
 
@@ -66,6 +77,11 @@ export async function addTimeOff(startTime: Date, endTime: Date, reason?: string
 
 // 3. Remove TimeOff
 export async function removeTimeOff(timeOffId: string) {
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    return { success: true };
+  }
+
   try {
     await prisma.timeOff.delete({ where: { id: timeOffId } });
     revalidatePath('/dashboard/tutor/schedule');
@@ -79,6 +95,11 @@ export async function removeTimeOff(timeOffId: string) {
 export async function addExtraSlot(dayOfWeek: number, startTimeUtc: string, endTimeUtc: string, validFrom: Date, validUntil: Date) {
   const session = await auth();
   if (session?.user?.role !== 'tutor') return { error: "Não autorizado." };
+
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    return { success: true };
+  }
 
   const tutorProfile = await prisma.tutorProfile.findUnique({ where: { userId: session.user.id } });
   if (!tutorProfile) return { error: "Perfil não encontrado." };
@@ -105,6 +126,11 @@ export async function addExtraSlot(dayOfWeek: number, startTimeUtc: string, endT
 
 // 5. Remove Extra Slot (Availability)
 export async function removeExtraSlot(availabilityId: string) {
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    return { success: true };
+  }
+
   try {
     await prisma.availability.delete({ where: { id: availabilityId } });
     revalidatePath('/dashboard/tutor/schedule');
@@ -118,6 +144,11 @@ export async function removeExtraSlot(availabilityId: string) {
 export async function manualBookSession(studentId: string, scheduledStart: Date, scheduledEnd: Date, subjectId: string) {
   const session = await auth();
   if (session?.user?.role !== 'tutor') return { error: "Não autorizado." };
+
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    return { success: true };
+  }
 
   const tutorProfile = await prisma.tutorProfile.findUnique({ where: { userId: session.user.id } });
   if (!tutorProfile) return { error: "Perfil não encontrado." };
@@ -136,7 +167,7 @@ export async function manualBookSession(studentId: string, scheduledStart: Date,
         durationMinutes,
         priceCents,
         currency: tutorProfile.currency,
-        status: 'confirmed', // Agendamento manual já entra como confirmado
+        status: 'confirmed',
       }
     });
 

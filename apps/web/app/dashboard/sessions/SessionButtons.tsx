@@ -36,7 +36,7 @@ export function CancelButton({ sessionId }: { sessionId: string }) {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border)',
-        background: 'white', cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 500,
+        background: 'var(--color-surface)', cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 500,
         color: 'var(--color-text-secondary)',
       }}
     >
@@ -79,7 +79,7 @@ export function ReviewButton({ sessionId }: { sessionId: string }) {
         style={{
           display: 'inline-flex', alignItems: 'center', gap: '6px',
           padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border)',
-          background: 'white', cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 500,
+          background: 'var(--color-surface)', cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 500,
           color: 'var(--color-text-secondary)',
         }}
       >
@@ -92,10 +92,10 @@ export function ReviewButton({ sessionId }: { sessionId: string }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }} onClick={() => setIsOpen(false)}>
           <div onClick={e => e.stopPropagation()} style={{
-            background: 'white', borderRadius: '16px', padding: '32px', width: '90%', maxWidth: '440px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            background: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '32px', width: '90%', maxWidth: '440px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
           }}>
-            <h3 style={{ marginBottom: '16px', fontWeight: 600 }}>Avaliar Tutor</h3>
+            <h3 style={{ marginBottom: '16px', fontWeight: 600, color: 'var(--color-text)' }}>Avaliar Tutor</h3>
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               {[1, 2, 3, 4, 5].map(n => (

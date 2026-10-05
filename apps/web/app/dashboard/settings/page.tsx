@@ -187,7 +187,7 @@ export default function SettingsPage() {
                   </div>
 
                   {profileMsg && (
-                    <div style={{ padding: '12px', borderRadius: '8px', background: profileMsg.type === 'success' ? 'var(--color-success-bg)' : '#fff0f0', color: profileMsg.type === 'success' ? 'var(--color-success)' : '#c00', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ padding: '12px', borderRadius: '8px', background: profileMsg.type === 'success' ? 'var(--color-success-bg)' : 'var(--color-error-bg)', color: profileMsg.type === 'success' ? 'var(--color-success)' : 'var(--color-error)', border: `1px solid ${profileMsg.type === 'success' ? 'rgba(52, 211, 153, 0.3)' : 'rgba(251, 113, 133, 0.3)'}`, display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {profileMsg.type === 'success' && <CheckCircle size={16} />}
                       {profileMsg.text}
                     </div>
@@ -212,8 +212,9 @@ export default function SettingsPage() {
                     borderRadius: '20px', 
                     fontSize: '12px', 
                     fontWeight: 600,
-                    background: userData?.tutorProfile?.status === 'approved' ? 'var(--color-success-bg, #e8f5e9)' : 'var(--color-warning-bg, #fff8e1)',
-                    color: userData?.tutorProfile?.status === 'approved' ? 'var(--color-success, #2e7d32)' : 'var(--color-warning, #f57f17)'
+                    background: userData?.tutorProfile?.status === 'approved' ? 'var(--color-success-bg)' : 'var(--color-warning-bg)',
+                    color: userData?.tutorProfile?.status === 'approved' ? 'var(--color-success)' : 'var(--color-warning)',
+                    border: `1px solid ${userData?.tutorProfile?.status === 'approved' ? 'rgba(52, 211, 153, 0.3)' : 'rgba(251, 191, 36, 0.3)'}`
                   }}>
                     {userData?.tutorProfile?.status === 'approved' ? '● Perfil Ativo' : '● Em Análise'}
                   </span>
@@ -248,7 +249,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <div style={{ padding: '16px', background: 'var(--color-surface-hover, #f8f9fa)', borderRadius: '12px', marginBottom: '24px' }}>
+                  <div style={{ padding: '16px', background: 'var(--color-surface-hover)', borderRadius: '12px', marginBottom: '24px', border: '1px solid var(--color-border-subtle)' }}>
                     <div className={styles.formGroup} style={{ marginBottom: 12 }}>
                       <label className={styles.label}>Aula Experimental (R$)</label>
                       <input 
@@ -329,7 +330,7 @@ export default function SettingsPage() {
                   </div>
 
                   {tutorMsg && (
-                    <div style={{ padding: '12px', borderRadius: '8px', background: tutorMsg.type === 'success' ? 'var(--color-success-bg, #e8f5e9)' : '#fff0f0', color: tutorMsg.type === 'success' ? 'var(--color-success, #2e7d32)' : '#c00', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 16 }}>
+                    <div style={{ padding: '12px', borderRadius: '8px', background: tutorMsg.type === 'success' ? 'var(--color-success-bg)' : 'var(--color-error-bg)', color: tutorMsg.type === 'success' ? 'var(--color-success)' : 'var(--color-error)', border: `1px solid ${tutorMsg.type === 'success' ? 'rgba(52, 211, 153, 0.3)' : 'rgba(251, 113, 133, 0.3)'}`, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 16 }}>
                       {tutorMsg.type === 'success' && <CheckCircle size={16} />}
                       {tutorMsg.text}
                     </div>
@@ -391,7 +392,7 @@ export default function SettingsPage() {
                   </div>
 
                   {passwordMsg && (
-                    <div style={{ padding: '12px', borderRadius: '8px', background: passwordMsg.type === 'success' ? 'var(--color-success-bg)' : '#fff0f0', color: passwordMsg.type === 'success' ? 'var(--color-success)' : '#c00', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ padding: '12px', borderRadius: '8px', background: passwordMsg.type === 'success' ? 'var(--color-success-bg)' : 'var(--color-error-bg)', color: passwordMsg.type === 'success' ? 'var(--color-success)' : 'var(--color-error)', border: `1px solid ${passwordMsg.type === 'success' ? 'rgba(52, 211, 153, 0.3)' : 'rgba(251, 113, 133, 0.3)'}`, display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {passwordMsg.type === 'success' && <CheckCircle size={16} />}
                       {passwordMsg.text}
                     </div>

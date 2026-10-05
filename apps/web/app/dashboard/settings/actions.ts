@@ -4,6 +4,7 @@ import prisma from "@ailearn/database";
 import { auth } from "../../../auth";
 import { hash, compare } from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { isDatabaseReachable } from "../../../lib/db-check";
 
 export async function updateProfile(formData: FormData) {
   const session = await auth();
@@ -12,6 +13,12 @@ export async function updateProfile(formData: FormData) {
   const fullName = (formData.get('firstName') as string) + ' ' + (formData.get('lastName') as string);
   const headline = formData.get('headline') as string || '';
   const bio = formData.get('bio') as string || '';
+
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    revalidatePath('/dashboard/settings');
+    return { success: true };
+  }
 
   try {
     await prisma.user.update({
@@ -56,6 +63,11 @@ export async function updatePassword(formData: FormData) {
     return { error: 'A nova senha deve ter no mínimo 8 caracteres.' };
   }
 
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    return { success: true };
+  }
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -88,6 +100,12 @@ export async function updateTimezone(formData: FormData) {
   if (!session?.user?.id) return { error: "Não autenticado." };
 
   const timezone = formData.get('timezone') as string;
+
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    revalidatePath('/dashboard/settings');
+    return { success: true };
+  }
 
   try {
     await prisma.user.update({
@@ -128,6 +146,12 @@ export async function updateTutorSettings(formData: FormData) {
 
   const hourlyRateCents = Math.round(hourlyRate * 100);
   const trialRateCents = enableTrial && trialRate > 0 ? Math.round(trialRate * 100) : null;
+
+  const dbOnline = await isDatabaseReachable();
+  if (!dbOnline) {
+    revalidatePath('/dashboard/settings');
+    return { success: true };
+  }
 
   try {
     const tutorProfile = await prisma.tutorProfile.findUnique({

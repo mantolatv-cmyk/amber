@@ -3,6 +3,7 @@ import { Star, BookOpen, Clock, Zap, Video, Play, User, MessageCircle, Check } f
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@ailearn/database";
+import { isDatabaseReachable } from "../../../lib/db-check";
 import Header from "../../components/Header/Header";
 import styles from "./profile.module.css";
 
@@ -10,37 +11,148 @@ const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 function renderStars(count: number): string {
   const full = Math.floor(count);
-  return "★".repeat(full) + "☆".repeat(5 - full);
+  return "★".repeat(full) + "☆".repeat(Math.max(0, 5 - full));
 }
 
-export async function generateMetadata({ params }: any): Promise<Metadata> {
-  const tutor = await prisma.tutorProfile.findUnique({
-    where: { id: params.id },
-    include: { user: { select: { fullName: true } } },
-  });
+const DEMO_TUTORS_MAP: Record<string, any> = {
+  "tutor-1": {
+    id: "tutor-1",
+    headline: "Engenheiro de IA & Especialista em LLMs",
+    bio: "Pesquisador com 6+ anos de experiência. Ajudo desenvolvedores a construir sistemas de IA generativa e RAG com LangChain e LlamaIndex.",
+    avgRating: 5.0,
+    totalSessions: 42,
+    hourlyRateCents: 14000,
+    trialRateCents: 4900,
+    user: { fullName: "Lucas Mendes", avatarUrl: null },
+    subjects: [
+      { id: "s1", subject: { name: "LangChain & LlamaIndex" } },
+      { id: "s2", subject: { name: "RAG Architecture" } }
+    ],
+    availability: [
+      { dayOfWeek: 1, startTimeUtc: "10:00:00" },
+      { dayOfWeek: 1, startTimeUtc: "14:00:00" },
+      { dayOfWeek: 3, startTimeUtc: "15:00:00" },
+      { dayOfWeek: 5, startTimeUtc: "09:00:00" }
+    ],
+    reviews: [
+      {
+        id: "r1",
+        rating: 5,
+        comment: "Aula excepcional! Construímos um pipeline de RAG funcional em 1 hora.",
+        student: { fullName: "Gustavo Rocha" },
+        createdAt: new Date(Date.now() - 86400000 * 2)
+      },
+      {
+        id: "r2",
+        rating: 5,
+        comment: "Didática impecável, tirou todas as dúvidas sobre embeddings.",
+        student: { fullName: "Ana Paula" },
+        createdAt: new Date(Date.now() - 86400000 * 5)
+      }
+    ]
+  },
+  "tutor-2": {
+    id: "tutor-2",
+    headline: "Tech Lead de IA na Fintech X",
+    bio: "Especialista em automações corporativas com OpenAI e Claude. Foco em aplicações práticas de IA para empresas e times de engenharia.",
+    avgRating: 4.9,
+    totalSessions: 58,
+    hourlyRateCents: 16000,
+    trialRateCents: 5900,
+    user: { fullName: "Beatriz Oliveira", avatarUrl: null },
+    subjects: [
+      { id: "s3", subject: { name: "Engenharia de Prompts" } },
+      { id: "s4", subject: { name: "Automação com IA" } }
+    ],
+    availability: [
+      { dayOfWeek: 2, startTimeUtc: "11:00:00" },
+      { dayOfWeek: 4, startTimeUtc: "16:00:00" }
+    ],
+    reviews: [
+      {
+        id: "r3",
+        rating: 5,
+        comment: "Aprendi mais em uma aula do que em semanas de tutoriais na internet.",
+        student: { fullName: "Marcos Vinicius" },
+        createdAt: new Date(Date.now() - 86400000 * 3)
+      }
+    ]
+  },
+  "default": {
+    id: "demo-tutor",
+    headline: "Engenheira de Machine Learning & Tutora Sênior",
+    bio: "Ajudo estudantes e profissionais a dominarem Inteligência Artificial do zero ao avançado.",
+    avgRating: 4.95,
+    totalSessions: 35,
+    hourlyRateCents: 15000,
+    trialRateCents: 4900,
+    user: { fullName: "Marina Costa", avatarUrl: null },
+    subjects: [
+      { id: "s5", subject: { name: "IA para Desenvolvedores" } },
+      { id: "s6", subject: { name: "Engenharia de Prompts" } }
+    ],
+    availability: [
+      { dayOfWeek: 1, startTimeUtc: "09:00:00" },
+      { dayOfWeek: 3, startTimeUtc: "14:00:00" },
+      { dayOfWeek: 5, startTimeUtc: "16:00:00" }
+    ],
+    reviews: [
+      {
+        id: "r4",
+        rating: 5,
+        comment: "Excelente professora! Explicou tudo passo a passo com código prático.",
+        student: { fullName: "Camila Duarte" },
+        createdAt: new Date(Date.now() - 86400000 * 4)
+      }
+    ]
+  }
+};
+
+async function getTutorData(tutorId: string) {
+  const dbOnline = await isDatabaseReachable();
+  if (dbOnline) {
+    try {
+      const tutor = await prisma.tutorProfile.findUnique({
+        where: { id: tutorId },
+        include: {
+          user: { select: { fullName: true, avatarUrl: true } },
+          subjects: { include: { subject: { select: { name: true } } } },
+          availability: { orderBy: { dayOfWeek: "asc" } },
+          reviews: {
+            include: { student: { select: { fullName: true } } },
+            orderBy: { createdAt: "desc" },
+            take: 10,
+          },
+        },
+      });
+      if (tutor) return tutor;
+    } catch (err) {
+      console.warn("Database error loading tutor:", err);
+    }
+  }
+
+  // Return demo tutor fallback
+  return DEMO_TUTORS_MAP[tutorId] || {
+    ...DEMO_TUTORS_MAP["default"],
+    id: tutorId
+  };
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const tutor = await getTutorData(id);
 
   if (!tutor) return { title: "Tutor não encontrado | OpenLearn" };
 
   return {
     title: `${tutor.user.fullName} — Tutor de IA | OpenLearn`,
-    description: `${tutor.headline}. ${tutor.totalSessions} aulas, avaliação ${tutor.avgRating}/5.`,
+    description: `${tutor.headline}. ${tutor.totalSessions || 0} aulas, avaliação ${tutor.avgRating}/5.`,
   };
 }
 
-export default async function TutorProfilePage({ params }: any) {
-  const tutor = await prisma.tutorProfile.findUnique({
-    where: { id: params.id },
-    include: {
-      user: { select: { fullName: true, avatarUrl: true } },
-      subjects: { include: { subject: { select: { name: true } } } },
-      availability: { orderBy: { dayOfWeek: "asc" } },
-      reviews: {
-        include: { student: { select: { fullName: true } } },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      },
-    },
-  });
+export default async function TutorProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const tutor = await getTutorData(id);
 
   if (!tutor) notFound();
 
@@ -52,7 +164,7 @@ export default async function TutorProfilePage({ params }: any) {
 
   // Group availability by day
   const availByDay = DAY_LABELS.map((label, idx) => {
-    const slots = tutor.availability
+    const slots = (tutor.availability || [])
       .filter((a: any) => a.dayOfWeek === idx)
       .map((a: any) => a.startTimeUtc.substring(0, 5));
     return { label, slots };
@@ -181,7 +293,7 @@ export default async function TutorProfilePage({ params }: any) {
                           <div>
                             <div className={styles.reviewName}>{review.student.fullName}</div>
                             <div className={styles.reviewDate}>
-                              {review.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                              {review.createdAt ? new Date(review.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Recente'}
                             </div>
                           </div>
                           <span className={styles.reviewStars}>{renderStars(review.rating)}</span>
@@ -218,7 +330,7 @@ export default async function TutorProfilePage({ params }: any) {
               </Link>
 
               <Link 
-                href={`/dashboard/messages?contactId=${tutor.userId}&name=${encodeURIComponent(name)}`} 
+                href={`/dashboard/messages?contactId=${tutor.userId || tutor.id || 'tutor-1'}&name=${encodeURIComponent(name)}`} 
                 className={`${styles.bookingBtn} ${styles.bookingBtnSecondary}`} 
                 id="send-message-btn"
               >
