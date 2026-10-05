@@ -37,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" data-scroll-behavior="smooth">
+    <html lang="pt-BR" data-scroll-behavior="smooth" data-theme="light">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -45,7 +45,7 @@ export default function RootLayout({
               (function() {
                 try {
                   var saved = localStorage.getItem('openlearn-theme');
-                  var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  var theme = saved === 'dark' ? 'dark' : 'light';
                   document.documentElement.setAttribute('data-theme', theme);
                 } catch(e) {}
               })();

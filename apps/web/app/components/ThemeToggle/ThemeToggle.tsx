@@ -10,9 +10,8 @@ export default function ThemeToggle({ className }: { className?: string }) {
 
   useEffect(() => {
     setMounted(true);
-    const currentTheme = (document.documentElement.getAttribute('data-theme') as 'light' | 'dark') || 
-      (localStorage.getItem('openlearn-theme') as 'light' | 'dark') || 
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const savedTheme = localStorage.getItem('openlearn-theme');
+    const currentTheme = savedTheme === 'dark' ? 'dark' : 'light';
     
     setTheme(currentTheme);
     document.documentElement.setAttribute('data-theme', currentTheme);
